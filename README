@@ -1,0 +1,21 @@
+.. vim: ft=rst
+
+This project has tools for managing trusted user agents. For example, you might
+allow the user to indicate whether they are using a public or private computer
+and implement different policies for each. This uses Django 1.4's signed cookie
+facility and works independently of sessions.
+
+Short list of features:
+
+    - ``request.agent.is_trusted`` tells you whether the request came from a
+      trusted agent.
+    - APIs to trust or revoke the agent that made a given request.
+    - Global and per-user settings can set the duration of agent trust as well
+      as an inactivity timeout.
+    - Revoke all of a user's previously trusted agents at any time.
+
+..  The mechanisms by which a user is allowed to designate trusted agents is left
+    entirely to clients of this library. For an application of this API using
+    one-time passwords, see `django-otp-agents
+    <http://pypi.python.org/pypi/django-otp-agents>`_, part of the `django-otp
+    <http://pypi.python.org/pypi/django-otp>`_ suite.
