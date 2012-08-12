@@ -1,0 +1,6 @@
+v0.1.0 - Aug 12, 2012 - Initial release
+---------------------------------------
+
+Initial beta release. This project was spun off of `django-otp-agents
+<http://pypi.python.org/pypi/django-otp-agents>`_, part of the `django-otp
+<http://pypi.python.org/pypi/django-otp>`_ suite.

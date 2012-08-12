@@ -1,0 +1,7 @@
+# distutils
+^MANIFEST$
+dist/
+docs/build/
+
+# vim
+\.spell\..*\.add

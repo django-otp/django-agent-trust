@@ -1,0 +1,8 @@
+include CHANGES LICENSE README
+
+recursive-include docs Makefile *.rst *.py
+prune docs/build
+
+recursive-include django_agent_trust/fixtures *
+
+global-exclude *.pyc *.pyo
