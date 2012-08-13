@@ -9,6 +9,7 @@ urlpatterns = patterns('',
 
     url(r'^restricted/$', views.RestrictedView.as_view()),
     url(r'^trust/$', views.TrustView.as_view()),
+    url(r'^session/$', views.SessionView.as_view()),
     url(r'^revoke/$', views.RevokeView.as_view()),
     url(r'^revoke_others/$', views.RevokeOthersView.as_view()),
 )

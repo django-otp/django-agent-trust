@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.views.generic.base import View
 from django.utils.decorators import method_decorator
 
-from django_agent_trust import trust_current_agent, revoke_current_agent, revoke_other_agents
+from django_agent_trust import trust_agent, trust_session, revoke_agent, revoke_other_agents
 from django_agent_trust.decorators import trusted_agent_required
 
 
@@ -14,14 +14,21 @@ class RestrictedView(View):
 
 class TrustView(View):
     def post(self, request):
-        trust_current_agent(request)
+        trust_agent(request)
+
+        return HttpResponse()
+
+
+class SessionView(View):
+    def post(self, request):
+        trust_session(request)
 
         return HttpResponse()
 
 
 class RevokeView(View):
     def post(self, request):
-        revoke_current_agent(request)
+        revoke_agent(request)
 
         return HttpResponse()
 

@@ -30,7 +30,7 @@ class AgentCodingTestCase(TestCase):
         return self.alice.agentsettings
 
     def test_untrusted(self):
-        agent = self._roundtrip_agent(Agent.get_untrusted(self.alice))
+        agent = self._roundtrip_agent(Agent.untrusted_agent(self.alice))
 
         self.assert_(not agent.is_trusted)
         self.assertEqual(agent.trusted_at, None)
@@ -39,7 +39,7 @@ class AgentCodingTestCase(TestCase):
     def test_trusted(self):
         trusted_at = now()
 
-        agent = self._roundtrip(True, trusted_at, None, 1)
+        agent = self._roundtrip(True, trusted_at, None, 1, None)
 
         self.assert_(agent.is_trusted)
         self.assertEqual(agent.trusted_at, trusted_at)
@@ -49,7 +49,7 @@ class AgentCodingTestCase(TestCase):
         trusted_at = now() - timedelta(days=7)
 
         with settings(AGENT_TRUST_DAYS=5):
-            agent = self._roundtrip(True, trusted_at, None, 1)
+            agent = self._roundtrip(True, trusted_at, None, 1, None)
 
         self.assert_(not agent.is_trusted)
 
@@ -57,14 +57,14 @@ class AgentCodingTestCase(TestCase):
         trusted_at = now() - timedelta(days=7)
         self.agentsettings.trust_days = 5
 
-        agent = self._roundtrip(True, trusted_at, None, 1)
+        agent = self._roundtrip(True, trusted_at, None, 1, None)
 
         self.assert_(not agent.is_trusted)
 
     def test_expired_agent_only(self):
         trusted_at = now() - timedelta(days=7)
 
-        agent = self._roundtrip(True, trusted_at, 5, 1)
+        agent = self._roundtrip(True, trusted_at, 5, 1, None)
 
         self.assert_(not agent.is_trusted)
 
@@ -73,7 +73,7 @@ class AgentCodingTestCase(TestCase):
         self.agentsettings.trust_days = 14
 
         with settings(AGENT_TRUST_DAYS=5):
-            agent = self._roundtrip(True, trusted_at, 14, 1)
+            agent = self._roundtrip(True, trusted_at, 14, 1, None)
 
         self.assert_(not agent.is_trusted)
 
@@ -82,7 +82,7 @@ class AgentCodingTestCase(TestCase):
         self.agentsettings.trust_days = 5
 
         with settings(AGENT_TRUST_DAYS=14):
-            agent = self._roundtrip(True, trusted_at, 14, 1)
+            agent = self._roundtrip(True, trusted_at, 14, 1, None)
 
         self.assert_(not agent.is_trusted)
 
@@ -91,7 +91,7 @@ class AgentCodingTestCase(TestCase):
         self.agentsettings.trust_days = 14
 
         with settings(AGENT_TRUST_DAYS=14):
-            agent = self._roundtrip(True, trusted_at, 5, 1)
+            agent = self._roundtrip(True, trusted_at, 5, 1, None)
 
         self.assert_(not agent.is_trusted)
 
@@ -100,7 +100,7 @@ class AgentCodingTestCase(TestCase):
         self.agentsettings.trust_days = 14
 
         with settings(AGENT_TRUST_DAYS=14):
-            agent = self._roundtrip(True, trusted_at, 14, 1)
+            agent = self._roundtrip(True, trusted_at, 14, 1, None)
 
         self.assert_(agent.is_trusted)
         self.assertEqual(agent.trusted_at, trusted_at)
@@ -110,7 +110,7 @@ class AgentCodingTestCase(TestCase):
         trusted_at = now()
         self.agentsettings.serial = 2
 
-        agent = self._roundtrip(True, trusted_at, None, 1)
+        agent = self._roundtrip(True, trusted_at, None, 1, None)
 
         self.assert_(not agent.is_trusted)
 
@@ -140,7 +140,7 @@ class DecoratorTest(TestCase):
     def test_view_1_untrusted(self):
         request = self.factory.get('/')
         request.user = self.alice
-        request.agent = Agent.get_untrusted(self.alice)
+        request.agent = Agent.untrusted_agent(self.alice)
 
         response = decorated_view_1(request)
 
@@ -149,7 +149,7 @@ class DecoratorTest(TestCase):
     def test_view_1_trusted(self):
         request = self.factory.get('/')
         request.user = self.alice
-        request.agent = Agent.get_trusted(self.alice)
+        request.agent = Agent.trusted_agent(self.alice)
 
         response = decorated_view_1(request)
 
@@ -158,7 +158,7 @@ class DecoratorTest(TestCase):
     def test_view_2_untrusted(self):
         request = self.factory.get('/')
         request.user = self.alice
-        request.agent = Agent.get_untrusted(self.alice)
+        request.agent = Agent.untrusted_agent(self.alice)
 
         response = decorated_view_2(request)
 
@@ -167,7 +167,7 @@ class DecoratorTest(TestCase):
     def test_view_2_trusted(self):
         request = self.factory.get('/')
         request.user = self.alice
-        request.agent = Agent.get_trusted(self.alice)
+        request.agent = Agent.trusted_agent(self.alice)
 
         response = decorated_view_2(request)
 
@@ -200,6 +200,12 @@ class HttpTestCase(TestCase):
 
         self.assertEquals(response.status_code, 302)
 
+    def test_anon_trust(self):
+        self.alice.trust()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
     def test_authenticated(self):
         self.alice.login()
         response = self.alice.get_restricted()
@@ -212,6 +218,12 @@ class HttpTestCase(TestCase):
         response = self.alice.get_restricted()
 
         self.assertEquals(response.status_code, 200)
+
+    def test_anon(self):
+        self.alice.trust()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
 
     def test_revoked(self):
         self.alice.login()
@@ -229,6 +241,38 @@ class HttpTestCase(TestCase):
         response = self.alice.get_restricted()
 
         self.assertEquals(response.status_code, 200)
+
+    def test_trusted_session(self):
+        self.alice.login()
+        self.alice.trust_session()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 200)
+
+    def test_old_session(self):
+        self.alice.login()
+        self.alice.trust_session()
+        self.alice.logout()
+        self.alice.login()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_anon_session(self):
+        self.alice.trust_session()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_replace_trust(self):
+        self.alice.login()
+        self.alice.trust()
+        self.alice.trust_session()
+        self.alice.logout()
+        self.alice.login()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
 
     def test_other_trusted(self):
         self.alice.login()
@@ -286,6 +330,9 @@ class AgentClient(Client):
 
     def trust(self):
         return self.post('/trust/')
+
+    def trust_session(self):
+        return self.post('/session/')
 
     def revoke(self):
         return self.post('/revoke/')

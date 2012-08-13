@@ -6,6 +6,9 @@ from django.db import models
 from .conf import settings
 
 
+SESSION_TOKEN_KEY = 'django-agent-trust-token'
+
+
 class AgentSettings(models.Model):
     """
     Agent trust settings for a single user.
@@ -39,23 +42,31 @@ class Agent(object):
     These objects should be considered immutable and should not be instantiated
     by client code. Use the APIs below to manipulate trust.
     """
-    def __init__(self, user, is_trusted, trusted_at, trust_days, serial):
+    def __init__(self, user, is_trusted, trusted_at, trust_days, serial, session):
         self._user = user
         self._is_trusted = is_trusted
         self._trusted_at = trusted_at
         self._trust_days = trust_days
         self._serial = serial
+        self._session = session
 
     @classmethod
-    def get_untrusted(cls, user):
-        return cls(user, False, None, None, -1)
+    def untrusted_agent(cls, user):
+        return cls(user, False, None, None, -1, None)
 
     @classmethod
-    def get_trusted(cls, user, trust_days=None):
+    def trusted_agent(cls, user, trust_days=None):
         if user.is_anonymous():
             raise ValueError("Can't create a trusted agent for an anonymous user.")
 
-        return cls(user, True, datetime.now(), trust_days, user.agentsettings.serial)
+        return cls(user, True, datetime.now(), trust_days, user.agentsettings.serial, None)
+
+    @classmethod
+    def session_agent(cls, user, token):
+        if user.is_anonymous():
+            raise ValueError("Can't create a trusted agent for an anonymous user.")
+
+        return cls(user, True, datetime.now(), None, user.agentsettings.serial, token)
 
     @property
     def user(self):
@@ -64,7 +75,7 @@ class Agent(object):
     @property
     def is_trusted(self):
         """
-        ``True`` if this agent is trusted by the user.
+        ``True`` if this agent has been marked as trusted.
         """
         return self._is_trusted
 
@@ -82,6 +93,10 @@ class Agent(object):
     @property
     def serial(self):
         return self._serial
+
+    @property
+    def session(self):
+        return self._session
 
     @property
     def trust_expiration(self):
@@ -119,6 +134,7 @@ class Agent(object):
             'trusted_at': self._trusted_at_timestamp(),
             'trust_days': self.trust_days,
             'serial': self.serial,
+            'session': self.session,
         }
 
     def _trusted_at_timestamp(self):
@@ -135,8 +151,9 @@ class Agent(object):
         trusted_at = jsonable.get('trusted_at', None)
         trust_days = jsonable.get('trust_days', None)
         serial = jsonable.get('serial', -1)
+        session = jsonable.get('session', None)
 
         if trusted_at is not None:
             trusted_at = datetime.fromtimestamp(trusted_at)
 
-        return cls(user, is_trusted, trusted_at, trust_days, serial)
+        return cls(user, is_trusted, trusted_at, trust_days, serial, session)

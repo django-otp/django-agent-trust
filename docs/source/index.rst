@@ -20,13 +20,25 @@ on :mod:`django.contrib.auth`.
 Managing Trust
 --------------
 
+A view can determine whether it's being requested from a trusted agent by
+checking ``request.agent.is_trusted``. Agent trust is tied to authenticated
+users; each user gets a different cookie, so multiple users can maintain
+separate trust settings on your site using the same machine/browser. Anonymous
+users always have untrusted agents.
+
+Agent trust may be persistent or scoped to a session. Of course, the point of
+the library is the former, but the latter is included to enable more consistent
+authorization polices. For example, if you ask the user whether they are on a
+public or shared device, you might set session-scoped trust for public agents
+and persistent trust for private agents. Your authorization policy can then
+refer solely to agent trust. For public agents, this will be synonymous with
+authentication; for private agents, trust will persist across authenticated
+sessions. Persistent trust is typically implemented with two-factor
+authentication, where the second factor is used to establish the trusted agent.
+
 :class:`~django_agent_trust.middleware.AgentMiddleware` installs an object on
 requests that will tell you whether the requesting user agent has been marked
-trusted. It will also tell you what time it was originally trusted.
-
-Agent trust is tied to authenticated users. Each user gets a different cookie,
-so multiple users can maintain separate trust settings on your site using the
-same machine/browser. Anonymous users always have untrusted agents.
+trusted and at what time:
 
 .. autoclass:: django_agent_trust.models.Agent
     :members:
@@ -34,7 +46,7 @@ same machine/browser. Anonymous users always have untrusted agents.
 You can update the status of the current agent with the following APIs:
 
 .. automodule:: django_agent_trust
-    :members: trust_current_agent, revoke_current_agent, revoke_other_agents
+    :members: trust_agent, trust_session, revoke_agent, revoke_other_agents
 
 
 Limiting Access
@@ -51,7 +63,7 @@ django-agent-trust supports two types of trust expiration: simple expiration
 based on the original trust date and expiration from inactivity. Simple
 expiration can be managed on three levels: a global setting, a per-user setting,
 and a setting on the agent itself. Inactivity timeouts can be managed globally
-and per-user. Any time expirations are specified at multiple levels, the most
+and per-user. If any time expirations are specified at multiple levels, the most
 restrictive takes precedence. All expiration settings are measured in days,
 although fractional days are permitted.
 
@@ -63,7 +75,7 @@ model object:
     :members:
 
 A custom duration can be set on an individual agent at the time that it is
-trusted by :func:`~django_agent_trust.trust_current_agent`.
+trusted by :func:`~django_agent_trust.trust_agent`.
 
 Settings
 --------
@@ -104,7 +116,7 @@ A prefix for agent cookies. This can be anything.
 Default: ``'/'``
 
 The path set on the agent cookies. This should either match the URL path of your
-Django installation or be parent of that path.
+Django installation or be a parent of that path.
 
 
 .. setting:: AGENT_COOKIE_SECURE
