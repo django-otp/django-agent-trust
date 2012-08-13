@@ -29,6 +29,7 @@ so multiple users can maintain separate trust settings on your site using the
 same machine/browser. Anonymous users always have untrusted agents.
 
 .. autoclass:: django_agent_trust.models.Agent
+    :members:
 
 You can update the status of the current agent with the following APIs:
 
@@ -47,11 +48,12 @@ Expiration
 ----------
 
 django-agent-trust supports two types of trust expiration: simple expiration
-based on the original trust date and expiration from inactivity. Both types can
-be managed globally and on a per-user basis. If an expiration is set both
-globally and for the current user, then the more restrictive setting takes
-precedence.  All expiration settings are measured in days, although fractional
-days are permitted.
+based on the original trust date and expiration from inactivity. Simple
+expiration can be managed on three levels: a global setting, a per-user setting,
+and a setting on the agent itself. Inactivity timeouts can be managed globally
+and per-user. Any time expirations are specified at multiple levels, the most
+restrictive takes precedence. All expiration settings are measured in days,
+although fractional days are permitted.
 
 Global configuration takes the form of two settings: :setting:`AGENT_TRUST_DAYS`
 and :setting:`AGENT_INACTIVITY_DAYS`. Per-user configuration is done through a
@@ -60,6 +62,8 @@ model object:
 .. autoclass:: django_agent_trust.models.AgentSettings
     :members:
 
+A custom duration can be set on an individual agent at the time that it is
+trusted by :func:`~django_agent_trust.trust_current_agent`.
 
 Settings
 --------
