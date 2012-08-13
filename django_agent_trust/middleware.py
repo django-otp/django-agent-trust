@@ -6,7 +6,7 @@ import logging
 from django.core.exceptions import ImproperlyConfigured
 
 from .conf import settings
-from .models import AgentSettings, Agent
+from .models import AgentSettings, Agent, AnonymousAgent
 
 
 logger = logging.getLogger(__name__)
@@ -21,9 +21,6 @@ class AgentMiddleware(object):
     This middleware will set ``request.agent`` to an instance of
     :class:`django_agent_trust.models.Agent`. ``request.agent.is_trusted`` will
     tell you whether the user's agent has been trusted.
-
-    To mark the requesting agent trusted for future requests, just set
-    ``request.agent.is_trusted`` to ``True``.
     """
     def process_request(self, request):
         try:
@@ -32,9 +29,9 @@ class AgentMiddleware(object):
 
                 request.agent = self._load_agent(request)
             else:
-                request.agent = Agent.get_untrusted()
+                request.agent = AnonymousAgent()
         except:
-            request.agent = Agent.get_untrusted()
+            request.agent = AnonymousAgent()
 
             if settings.DEBUG:
                 raise
@@ -42,7 +39,12 @@ class AgentMiddleware(object):
         return None
 
     def process_response(self, request, response):
-        if request.user.is_authenticated() and getattr(request, 'agent', None):
+        if not hasattr(request, 'user') or not hasattr(request, 'agent'):
+            return response
+
+        if request.user.is_authenticated() and not request.agent.is_anonymous:
+            AgentSettings.objects.get_or_create(user=request.user)
+
             self._save_agent(request, response)
 
         return response
@@ -87,7 +89,7 @@ class AgentMiddleware(object):
         )
 
         cookie_name = self._cookie_name(request.user.username)
-        encoded = self._encode_agent(agent, request.user.agentsettings)
+        encoded = self._encode_cookie(agent, request.user.agentsettings)
         max_age = self._max_cookie_age(request.user.agentsettings)
 
         response.set_signed_cookie(cookie_name, encoded, max_age=max_age,

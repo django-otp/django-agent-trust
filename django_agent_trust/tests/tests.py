@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 
 from django.http import HttpResponse
 from django.test import TestCase
-from django.test.client import RequestFactory
+from django.test.client import Client, RequestFactory
 
-from .conf import settings
-from .decorators import trusted_agent_required
-from .models import AgentSettings, Agent
-from .middleware import AgentMiddleware
+from ..conf import settings
+from ..decorators import trusted_agent_required
+from ..models import AgentSettings, Agent
+from ..middleware import AgentMiddleware
 
 
 now = lambda: datetime.now().replace(microsecond=0)
@@ -156,7 +156,7 @@ class DecoratorTest(TestCase):
         request.user = None
         request.agent = Agent.get_untrusted()
 
-        response = trusted_view_1(request)
+        response = decorated_view_1(request)
 
         self.assertEqual(response.status_code, 302)
 
@@ -165,7 +165,7 @@ class DecoratorTest(TestCase):
         request.user = None
         request.agent = Agent(is_trusted=True, trusted_at=now(), serial=1)
 
-        response = trusted_view_1(request)
+        response = decorated_view_1(request)
 
         self.assertEqual(response.status_code, 200)
 
@@ -174,7 +174,7 @@ class DecoratorTest(TestCase):
         request.user = None
         request.agent = Agent.get_untrusted()
 
-        response = trusted_view_2(request)
+        response = decorated_view_2(request)
 
         self.assertEqual(response.status_code, 302)
 
@@ -183,15 +183,122 @@ class DecoratorTest(TestCase):
         request.user = None
         request.agent = Agent(is_trusted=True, trusted_at=now(), serial=1)
 
-        response = trusted_view_2(request)
+        response = decorated_view_2(request)
 
         self.assertEqual(response.status_code, 200)
 
 
 @trusted_agent_required
-def trusted_view_1(request):
+def decorated_view_1(request):
     return HttpResponse()
 
 @trusted_agent_required()
-def trusted_view_2(request):
+def decorated_view_2(request):
     return HttpResponse()
+
+
+class HttpTestCase(TestCase):
+    fixtures = ['tests/alice.yaml', 'tests/bob.yaml']
+    urls = 'django_agent_trust.tests.urls'
+
+    def setUp(self):
+        self.alice = AgentClient('alice')
+        self.bob = AgentClient('bob')
+
+    def test_anonymous(self):
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_authenticated(self):
+        self.alice.login()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_trusted(self):
+        self.alice.login()
+        self.alice.trust()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 200)
+
+    def test_revoked(self):
+        self.alice.login()
+        self.alice.trust()
+        self.alice.revoke()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_persist(self):
+        self.alice.login()
+        self.alice.trust()
+        self.alice.logout()
+        self.alice.login()
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 200)
+
+    def test_other_trusted(self):
+        self.alice.login()
+        self.alice.trust()
+        self.alice.logout()
+
+        self.bob.login()
+        response = self.bob.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_other_revoked(self):
+        self.alice.login()
+        self.alice.trust()
+
+        self.bob.login()
+        self.bob.trust()
+        self.bob.revoke()
+        self.bob.logout()
+
+        response = self.alice.get_restricted()
+
+        self.assertEquals(response.status_code, 200)
+
+    def test_revoke_others(self):
+        alice1 = AgentClient('alice')
+        alice2 = AgentClient('alice')
+
+        alice1.login()
+        alice1.trust()
+
+        alice2.login()
+        alice2.trust()
+        alice2.revoke_others()
+
+        response = alice1.get_restricted()
+
+        self.assertEquals(response.status_code, 302)
+
+
+class AgentClient(Client):
+    def __init__(self, username):
+        super(AgentClient, self).__init__()
+
+        self.username = username
+
+    def login(self):
+        return self.post('/login/', {'username': self.username, 'password': self.username})
+
+    def logout(self):
+        return self.post('/logout/')
+
+    def get_restricted(self):
+        return self.get('/restricted/')
+
+    def trust(self):
+        return self.post('/trust/')
+
+    def revoke(self):
+        return self.post('/revoke/')
+
+    def revoke_others(self):
+        return self.post('/revoke_others/')

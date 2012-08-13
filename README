@@ -14,6 +14,9 @@ Short list of features:
       as an inactivity timeout.
     - Revoke all of a user's previously trusted agents at any time.
 
+This is an early release and forward API compatibility is not guaranteed.
+Feedback is welcome.
+
 ..  The mechanisms by which a user is allowed to designate trusted agents is left
     entirely to clients of this library. For an application of this API using
     one-time passwords, see `django-otp-agents

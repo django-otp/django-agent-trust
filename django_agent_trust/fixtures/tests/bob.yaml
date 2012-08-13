@@ -1,0 +1,15 @@
+- model: auth.user
+  pk: 2
+  fields:
+    date_joined: 2012-07-15 16:03:02.420965
+    email: bob@example.com
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: 2012-07-17 19:00:09.753345
+    last_name: ''
+    password: "pbkdf2_sha256$10000$vYXjHcrKaoTm$dIo9dr6PshlJxs15Un9FAZ+nzX/NytExNzC6deN1Hvc="
+    user_permissions: []
+    username: bob

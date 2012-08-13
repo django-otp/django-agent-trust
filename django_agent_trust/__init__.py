@@ -8,7 +8,11 @@ def trust_current_agent(request):
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
-    request.agent.is_trusted = True
+    if request.user.is_authenticated():
+        if request.agent.is_anonymous:
+            request.agent = Agent()
+
+        request.agent.is_trusted = True
 
 
 def revoke_current_agent(request):
@@ -19,7 +23,8 @@ def revoke_current_agent(request):
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
-    request.agent = Agent.get_untrusted()
+    if request.user.is_authenticated():
+        request.agent = Agent.get_untrusted()
 
 
 def revoke_other_agents(request):
@@ -29,7 +34,8 @@ def revoke_other_agents(request):
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
-    request.user.agentsettings.serial += 1
-    request.user.agentsettings.save()
+    if request.user.is_authenticated():
+        request.user.agentsettings.serial += 1
+        request.user.agentsettings.save()
 
-    request.agent.serial = request.user.agentsettings.serial
+        request.agent.serial = request.user.agentsettings.serial
