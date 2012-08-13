@@ -6,7 +6,7 @@ import logging
 from django.core.exceptions import ImproperlyConfigured
 
 from .conf import settings
-from .models import AgentSettings, Agent, AnonymousAgent
+from .models import AgentSettings, Agent
 
 
 logger = logging.getLogger(__name__)
@@ -23,29 +23,21 @@ class AgentMiddleware(object):
     tell you whether the user's agent has been trusted.
     """
     def process_request(self, request):
-        try:
-            if request.user.is_authenticated():
-                AgentSettings.objects.get_or_create(user=request.user)
+        if request.user.is_authenticated():
+            AgentSettings.objects.get_or_create(user=request.user)
 
-                request.agent = self._load_agent(request)
-            else:
-                request.agent = AnonymousAgent()
-        except:
-            request.agent = AnonymousAgent()
-
-            if settings.DEBUG:
-                raise
+            request.agent = self._load_agent(request)
+        else:
+            request.agent = Agent.get_untrusted(request.user)
 
         return None
 
     def process_response(self, request, response):
-        if not hasattr(request, 'user') or not hasattr(request, 'agent'):
-            return response
+        agent = getattr(request, 'agent', None)
 
-        if request.user.is_authenticated() and not request.agent.is_anonymous:
-            AgentSettings.objects.get_or_create(user=request.user)
-
-            self._save_agent(request, response)
+        if (agent is not None) and agent.user.is_authenticated():
+            AgentSettings.objects.get_or_create(user=agent.user)
+            self._save_agent(agent, response)
 
         return response
 
@@ -59,38 +51,42 @@ class AgentMiddleware(object):
             max_age=max_age
         )
 
-        return self._decode_cookie(encoded, request.user.agentsettings)
+        return self._decode_cookie(encoded, request.user)
 
-    def _decode_cookie(self, encoded, agentsettings):
+    def _decode_cookie(self, encoded, user):
         data = json.loads(b64decode(encoded))
 
         logger.debug('Decoded agent: {0}'.format(data))
 
-        agent = Agent.from_jsonable(data)
+        agent = Agent.from_jsonable(data, user)
+        if self._should_discard_agent(agent):
+            agent = Agent.get_untrusted(user)
 
-        if (agent.trusted_at is None) or (agent.trusted_at < self._min_trusted_at(agentsettings)):
-            agent.is_trusted = False
-
-        if agent.serial < agentsettings.serial:
-            agent.is_trusted = False
-
-        logger.debug('Loaded agent: is_trusted={0}, trusted_at={1}, serial={2}'.format(
-            agent.is_trusted, agent.trusted_at, agent.serial)
+        logger.debug('Loaded agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
+            user.username, agent.is_trusted, agent.trusted_at, agent.serial)
         )
 
         return agent
 
+    def _should_discard_agent(self, agent):
+        expiration = agent.trust_expiration
+        if (expiration is not None) and (expiration < datetime.now()):
+            return True
 
-    def _save_agent(self, request, response):
-        agent = request.agent
+        if agent.serial < agent.user.agentsettings.serial:
+            return True
 
-        logger.debug('Saving agent: is_trusted={0}, trusted_at={1}, serial={2}'.format(
-            agent.is_trusted, agent.trusted_at, agent.serial)
+        return False
+
+
+    def _save_agent(self, agent, response):
+        logger.debug('Saving agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
+            agent.user.username, agent.is_trusted, agent.trusted_at, agent.serial)
         )
 
-        cookie_name = self._cookie_name(request.user.username)
-        encoded = self._encode_cookie(agent, request.user.agentsettings)
-        max_age = self._max_cookie_age(request.user.agentsettings)
+        cookie_name = self._cookie_name(agent.user.username)
+        encoded = self._encode_cookie(agent, agent.user)
+        max_age = self._max_cookie_age(agent.user.agentsettings)
 
         response.set_signed_cookie(cookie_name, encoded, max_age=max_age,
             path=settings.AGENT_COOKIE_PATH,
@@ -99,13 +95,13 @@ class AgentMiddleware(object):
             httponly=settings.AGENT_COOKIE_HTTPONLY
         )
 
-    def _encode_cookie(self, agent, agentsettings):
+    def _encode_cookie(self, agent, user):
         if agent.is_trusted:
             if agent.trusted_at is None:
                 agent.trusted_at = datetime.now().replace(microsecond=0)
 
             if agent.serial < 0:
-                agent.serial = agentsettings.serial
+                agent.serial = user.agentsettings.serial
 
         encoded = b64encode(json.dumps(agent.to_jsonable()))
 
@@ -131,22 +127,3 @@ class AgentMiddleware(object):
             days = user_days
 
         return days * 86400
-
-    def _min_trusted_at(self, agentsettings):
-        """
-        Returns the earliest datetime that we'll accept as a trusted_at value.
-        Anything before that has expired.
-        """
-        prefs = filter(
-            lambda d: d is not None, [
-                settings.AGENT_TRUST_DAYS,
-                agentsettings.trust_days
-            ]
-        )
-
-        if len(prefs) > 0:
-            min_trusted_at = datetime.now() - timedelta(days=min(prefs))
-        else:
-            min_trusted_at = datetime(MINYEAR, 1, 1)
-
-        return min_trusted_at
