@@ -3,15 +3,17 @@
 This project has tools for managing trusted user agents. For example, you might
 allow the user to indicate whether they are using a public or private computer
 and implement different policies for each. This uses Django 1.4's signed cookie
-facility and works independently of sessions.
+facility and operates independently of sessions.
 
 Short list of features:
 
     - ``request.agent.is_trusted`` tells you whether the request came from a
       trusted agent.
     - APIs to trust or revoke the agent that made a given request.
-    - Global and per-user settings can set the duration of agent trust as well
-      as an inactivity timeout.
+    - Global, per-user, and per-agent settings can set the duration of agent
+      trust as well as an inactivity timeout.
+    - Supports session-scoped agent trust for consistency of authorization
+      policies.
     - Revoke all of a user's previously trusted agents at any time.
 
 This is an early release and forward API compatibility is not guaranteed.

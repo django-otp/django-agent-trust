@@ -1,7 +1,9 @@
-from .models import Agent
+from random import randrange
+
+from .models import Agent, SESSION_TOKEN_KEY
 
 
-def trust_current_agent(request, trust_days=None):
+def trust_agent(request, trust_days=None):
     """
     Mark the requesting agent as trusted for the currently logged-in user. This
     does nothing for anonymous users.
@@ -12,17 +14,37 @@ def trust_current_agent(request, trust_days=None):
         for no agent-specific limit.
     """
     if request.user.is_authenticated():
-        request.agent = Agent.get_trusted(request.user, trust_days)
+        request.agent = Agent.trusted_agent(request.user, trust_days)
 
 
-def revoke_current_agent(request):
+def trust_session(request):
+    """
+    Mark the requesting agent as trusted in the context of the current session;
+    when the session ends, the agent's trust will be revoked. This replaces any
+    agent trust that already exists. All expiration settings and future
+    revocations still apply. This does nothing for anonymous users.
+
+    :param request: The current request.
+    :type request: :class:`~django.http.HttpRequest`
+    """
+    if request.user.is_authenticated():
+        # We need a token to link this agent to the current session. It's
+        # strictly internal, so it doesn't have to be cryptographically sound,
+        # just probabalistically unique.
+        token = randrange(2**32)
+
+        request.session[SESSION_TOKEN_KEY] = token
+        request.agent = Agent.session_agent(request.user, token)
+
+
+def revoke_agent(request):
     """
     Revoke trust in the requesting agent for the currently logged-in user.
 
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
-    request.agent = Agent.get_untrusted(request.user)
+    request.agent = Agent.untrusted_agent(request.user)
 
 
 def revoke_other_agents(request):

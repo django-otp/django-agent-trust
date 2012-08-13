@@ -1,12 +1,12 @@
 from base64 import b64encode, b64decode
-from datetime import datetime, timedelta, MINYEAR
+from datetime import datetime
 import json
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
 
 from .conf import settings
-from .models import AgentSettings, Agent
+from .models import AgentSettings, Agent, SESSION_TOKEN_KEY
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class AgentMiddleware(object):
 
             request.agent = self._load_agent(request)
         else:
-            request.agent = Agent.get_untrusted(request.user)
+            request.agent = Agent.untrusted_agent(request.user)
 
         return None
 
@@ -51,7 +51,12 @@ class AgentMiddleware(object):
             max_age=max_age
         )
 
-        return self._decode_cookie(encoded, request.user)
+        agent = self._decode_cookie(encoded, request.user)
+
+        if (agent.session is not None) and (agent.session != request.session.get(SESSION_TOKEN_KEY)):
+            agent = Agent.untrusted_agent(request.user)
+
+        return agent
 
     def _decode_cookie(self, encoded, user):
         data = json.loads(b64decode(encoded))
@@ -60,7 +65,7 @@ class AgentMiddleware(object):
 
         agent = Agent.from_jsonable(data, user)
         if self._should_discard_agent(agent):
-            agent = Agent.get_untrusted(user)
+            agent = Agent.untrusted_agent(user)
 
         logger.debug('Loaded agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
             user.username, agent.is_trusted, agent.trusted_at, agent.serial)
