@@ -50,6 +50,8 @@ class Agent(object):
         :attr:`~otp_agents.models.AgentSettings.serial` at the time this
         agent was trusted.
     """
+    is_anonymous = False
+
     def __init__(self, is_trusted=False, trusted_at=None, serial=-1):
         self._is_trusted = is_trusted
         self.trusted_at = trusted_at
@@ -90,3 +92,13 @@ class Agent(object):
             trusted_at = datetime.fromtimestamp(trusted_at)
 
         return cls(is_trusted, trusted_at, serial)
+
+
+class AnonymousAgent(object):
+    """
+    A dummy agent for anonymous users.
+    """
+    is_anonymous = True
+    is_trusted = False
+    trusted_at = None
+    serial = -1

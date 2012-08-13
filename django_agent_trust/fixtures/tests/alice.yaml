@@ -10,7 +10,7 @@
     is_superuser: false
     last_login: 2012-07-17 19:00:09.753345
     last_name: ''
-    password: sha1$76223$c4f1daa1f2f3a7a3a6737538873ba335c60b5b7d
+    password: "pbkdf2_sha256$10000$MYHmz8K0VV62$KNIb6snYFT3y48UlLr0um/DwsJGMO1oedu9OhReU0RY="
     user_permissions: []
     username: alice
 
