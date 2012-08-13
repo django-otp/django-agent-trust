@@ -36,7 +36,6 @@ class AgentMiddleware(object):
         agent = getattr(request, 'agent', None)
 
         if (agent is not None) and agent.user.is_authenticated():
-            AgentSettings.objects.get_or_create(user=agent.user)
             self._save_agent(agent, response)
 
         return response
