@@ -15,10 +15,13 @@ on :mod:`django.contrib.auth`.
     #. Add ``'django_agent_trust.middleware.AgentMiddleware'`` to
        :setting:`MIDDLEWARE_CLASSES`. It must come after
        :class:`~django.contrib.auth.middleware.AuthenticationMiddleware`.
+    #. If you want to access agent information in templates, add
+       ``'django_agent_trust.context_processors.agent'`` to
+       :setting:`TEMPLATE_CONTEXT_PROCESSORS`.
 
 
-Managing Trust
---------------
+Assessing Trust
+---------------
 
 A view can determine whether it's being requested from a trusted agent by
 checking ``request.agent.is_trusted``. Agent trust is tied to authenticated
@@ -26,22 +29,32 @@ users; each user gets a different cookie, so multiple users can maintain
 separate trust settings on your site using the same machine/browser. Anonymous
 users always have untrusted agents.
 
-Agent trust may be persistent or scoped to a session. Of course, the point of
-the library is the former, but the latter is included to enable more consistent
-authorization polices. For example, if you ask the user whether they are on a
-public or shared device, you might set session-scoped trust for public agents
-and persistent trust for private agents. Your authorization policy can then
-refer solely to agent trust. For public agents, this will be synonymous with
-authentication; for private agents, trust will persist across authenticated
-sessions. Persistent trust is typically implemented with two-factor
-authentication, where the second factor is used to establish the trusted agent.
-
 :class:`~django_agent_trust.middleware.AgentMiddleware` installs an object on
 requests that will tell you whether the requesting user agent has been marked
 trusted and at what time:
 
 .. autoclass:: django_agent_trust.models.Agent
+    :members: is_trusted, is_session, trusted_at, trust_expiration
+
+You may optionally install an included context processor to propagate these
+objects to template contexts:
+
+.. automodule:: django_agent_trust.context_processors
     :members:
+
+
+Managing Trust
+--------------
+
+Agent trust may be persistent or scoped to a session. Of course, the point of
+the library is the former, but the latter is included to enable more consistent
+authorization polices. For example, if you ask the user whether they are on a
+public or shared device, you might set session-scoped trust for public agents
+and persistent trust for private agents. Your authorization policy can then
+refer solely to agent trust: for public agents, this will be synonymous with
+authentication; for private agents, trust will persist across login sessions.
+Persistent trust is typically implemented with two-factor authentication, where
+the second factor is used to establish the trusted agent.
 
 You can update the status of the current agent with the following APIs:
 

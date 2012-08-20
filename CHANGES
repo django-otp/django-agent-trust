@@ -1,3 +1,14 @@
+.. vim: ft=rst nospell tw=80
+
+v0.1.1 - Aug 19, 2012 - Minor improvements
+------------------------------------------
+
+- Added :func:`django_agent_trust.context_processors.agent`.
+
+- Added :attr:`Agent.is_session <django_agent_trust.models.Agent.is_session>` to
+  indicate session-scoped trusted agents.
+
+
 v0.1.0 - Aug 13, 2012 - Initial release
 ---------------------------------------
 
