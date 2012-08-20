@@ -2,7 +2,9 @@
 
 This project has tools for managing trusted user agents. For example, you might
 allow the user to indicate whether they are using a public or private computer
-and implement different policies for each. This uses Django 1.4's signed cookie
+and implement different policies for each. Or you might be using a two-factor
+authentication scheme, allowing the users to bypass the second factor on
+machines that they designate as trusted. This uses Django 1.4's signed cookie
 facility and operates independently of sessions.
 
 Short list of features:

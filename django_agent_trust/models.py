@@ -39,8 +39,8 @@ class Agent(object):
     """
     Objects of this class will be attached to requests as ``request.agent``.
     This is not a database model; it will be serialized into a signed cookie.
-    These objects should be considered immutable and should not be instantiated
-    by client code. Use the APIs below to manipulate trust.
+    These objects are immutable and should never be instantiated directly. Use
+    the APIs below to manipulate trust.
     """
     def __init__(self, user, is_trusted, trusted_at, trust_days, serial, session):
         self._user = user
@@ -78,6 +78,13 @@ class Agent(object):
         ``True`` if this agent has been marked as trusted.
         """
         return self._is_trusted
+
+    @property
+    def is_session(self):
+        """
+        ``True`` if this agent is only trusted for the current session.
+        """
+        return (self._session is not None)
 
     @property
     def trusted_at(self):

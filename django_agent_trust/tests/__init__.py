@@ -33,6 +33,7 @@ class AgentCodingTestCase(TestCase):
         agent = self._roundtrip_agent(Agent.untrusted_agent(self.alice))
 
         self.assert_(not agent.is_trusted)
+        self.assert_(not agent.is_session)
         self.assertEqual(agent.trusted_at, None)
         self.assertEqual(agent.serial, -1)
 
@@ -42,6 +43,7 @@ class AgentCodingTestCase(TestCase):
         agent = self._roundtrip(True, trusted_at, None, 1, None)
 
         self.assert_(agent.is_trusted)
+        self.assert_(not agent.is_session)
         self.assertEqual(agent.trusted_at, trusted_at)
         self.assertEqual(agent.serial, 1)
 
@@ -113,6 +115,12 @@ class AgentCodingTestCase(TestCase):
         agent = self._roundtrip(True, trusted_at, None, 1, None)
 
         self.assert_(not agent.is_trusted)
+
+    def test_session(self):
+        agent = self._roundtrip(True, now(), None, 1, '1234')
+
+        self.assert_(agent.is_trusted)
+        self.assert_(agent.is_session)
 
 
     def _roundtrip(self, *args, **kwargs):
