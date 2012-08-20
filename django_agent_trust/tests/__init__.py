@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 from ..conf import settings
 from ..decorators import trusted_agent_required
-from ..models import Agent
+from ..models import Agent, AgentSettings
 from ..middleware import AgentMiddleware
 
 
@@ -19,10 +19,11 @@ class AgentCodingTestCase(TestCase):
     Tests as much of the middleware as possible without the request/response
     cycle. Any tests that need to manipulate the date will be at this level.
     """
-    fixtures = ['tests/alice.yaml']
+    fixtures = ['tests/alice.yaml', 'tests/bob.yaml']
 
     def setUp(self):
         self.alice = User.objects.get(username='alice')
+        self.bob = User.objects.get(username='bob')
         self.middleware = AgentMiddleware()
 
     @property
@@ -121,6 +122,15 @@ class AgentCodingTestCase(TestCase):
 
         self.assert_(agent.is_trusted)
         self.assert_(agent.is_session)
+
+    def test_cross_user(self):
+        AgentSettings.objects.get_or_create(user=self.bob)
+
+        agent = Agent.trusted_agent(self.alice)
+        encoded = self.middleware._encode_cookie(agent, self.alice)
+        agent = self.middleware._decode_cookie(encoded, self.bob)
+
+        self.assert_(not agent.is_trusted)
 
 
     def _roundtrip(self, *args, **kwargs):

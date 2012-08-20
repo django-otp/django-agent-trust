@@ -1,5 +1,12 @@
 .. vim: ft=rst nospell tw=80
 
+v0.1.2 - Aug 19, 2012 - Security fix
+------------------------------------
+
+- Include the username in the signed cookie payload and don't accept it for any
+  other user.
+
+
 v0.1.1 - Aug 19, 2012 - Minor improvements
 ------------------------------------------
 
