@@ -58,12 +58,18 @@ class AgentMiddleware(object):
         return agent
 
     def _decode_cookie(self, encoded, user):
+        agent = None
+
         data = json.loads(b64decode(encoded))
 
         logger.debug('Decoded agent: {0}'.format(data))
 
-        agent = Agent.from_jsonable(data, user)
-        if self._should_discard_agent(agent):
+        if data.get('username') == user.username:
+            agent = Agent.from_jsonable(data, user)
+            if self._should_discard_agent(agent):
+                agent = None
+
+        if agent is None:
             agent = Agent.untrusted_agent(user)
 
         logger.debug('Loaded agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(

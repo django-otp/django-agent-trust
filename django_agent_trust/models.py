@@ -137,6 +137,7 @@ class Agent(object):
 
     def to_jsonable(self):
         return {
+            'username': self.user.username,
             'is_trusted': self.is_trusted,
             'trusted_at': self._trusted_at_timestamp(),
             'trust_days': self.trust_days,
