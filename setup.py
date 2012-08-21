@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-agent-trust',
-    version='0.1.2',
+    version='0.1.3',
     description="A framework for managing agent trust, such as public vs. private computers.",
     long_description=open('README').read(),
     author='Peter Sagerson',

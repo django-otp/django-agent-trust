@@ -1,5 +1,11 @@
 .. vim: ft=rst nospell tw=80
 
+v0.1.3 - Aug 20, 2012 - Packaging fix
+-------------------------------------
+
+- Switch to setuptools to install fixtures. The tests will fail otherwise.
+
+
 v0.1.2 - Aug 19, 2012 - Security fix
 ------------------------------------
 
