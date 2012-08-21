@@ -1,7 +1,8 @@
-# distutils
+# setuptools
 ^MANIFEST$
 dist/
 docs/build/
+\.egg-info/
 
 # vim
 \.spell\..*\.add
