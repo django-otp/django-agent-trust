@@ -1,4 +1,4 @@
-.. vim: ft=rst
+.. vim: ft=rst nospell tw=80
 
 This project has tools for managing trusted user agents. For example, you might
 allow the user to indicate whether they are using a public or private computer
@@ -18,11 +18,8 @@ Short list of features:
       policies.
     - Revoke all of a user's previously trusted agents at any time.
 
-This is an early release and forward API compatibility is not guaranteed.
-Feedback is welcome.
-
-..  The mechanisms by which a user is allowed to designate trusted agents is left
-    entirely to clients of this library. For an application of this API using
-    one-time passwords, see `django-otp-agents
-    <http://pypi.python.org/pypi/django-otp-agents>`_, part of the `django-otp
-    <http://pypi.python.org/pypi/django-otp>`_ suite.
+The mechanisms by which a user is allowed to designate trusted agents is left
+entirely to clients of this library. For an application of this API using
+one-time passwords, see `django-otp-agents
+<http://pypi.python.org/pypi/django-otp-agents>`_, part of the `django-otp
+<http://pypi.python.org/pypi/django-otp>`_ suite.
