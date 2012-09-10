@@ -1,5 +1,13 @@
 .. vim: ft=rst nospell tw=80
 
+v0.1.4 - Sep 10, 2012 - Admin cosmetics
+---------------------------------------
+
+- Add :func:`AgentSettings.unicode
+  <django_agent_trust.models.AgentSettings.unicode>` for the benefit of the
+  admin site.
+
+
 v0.1.3 - Aug 20, 2012 - Packaging fix
 -------------------------------------
 
