@@ -34,6 +34,9 @@ class AgentSettings(models.Model):
     inactivity_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days allowed between requests before a agent's trust is revoked.")
     serial = models.IntegerField(default=0, help_text="Increment this to revoke all previously trusted agents.")
 
+    def __unicode__(self):
+        return u'AgentSettings: {0}'.format(self.user.username)
+
 
 class Agent(object):
     """
