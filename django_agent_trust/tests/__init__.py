@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+from unittest import skipIf
 
+import django
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
@@ -14,6 +16,7 @@ from ..middleware import AgentMiddleware
 now = lambda: datetime.now().replace(microsecond=0)
 
 
+@skipIf(django.VERSION < (1,4), 'Requires Django 1.4')
 class AgentCodingTestCase(TestCase):
     """
     Tests as much of the middleware as possible without the request/response
@@ -148,6 +151,7 @@ class AgentCodingTestCase(TestCase):
         return self.middleware._decode_cookie(encoded, self.alice)
 
 
+@skipIf(django.VERSION < (1,4), 'Requires Django 1.4')
 class DecoratorTest(TestCase):
     fixtures = ['tests/alice.yaml']
 
@@ -201,6 +205,7 @@ def decorated_view_2(request):
     return HttpResponse()
 
 
+@skipIf(django.VERSION < (1,4), 'Requires Django 1.4')
 class HttpTestCase(TestCase):
     """
     Tests that exercise the full request/response cycle. These are less
