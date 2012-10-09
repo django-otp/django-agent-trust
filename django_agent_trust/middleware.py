@@ -3,7 +3,8 @@ from datetime import datetime
 import json
 import logging
 
-from django.core.exceptions import ImproperlyConfigured
+import django
+from django.core.exceptions import ImproperlyConfigured, MiddlewareNotUsed
 
 from .conf import settings
 from .models import AgentSettings, Agent, SESSION_TOKEN_KEY
@@ -22,6 +23,12 @@ class AgentMiddleware(object):
     :class:`django_agent_trust.models.Agent`. ``request.agent.is_trusted`` will
     tell you whether the user's agent has been trusted.
     """
+    def __init__(self):
+        if django.VERSION < (1,4):
+            logger.warn('django_agent_trust requires Django 1.4 or higher')
+
+            raise MiddlewareNotUsed()
+
     def process_request(self, request):
         if request.user.is_authenticated():
             AgentSettings.objects.get_or_create(user=request.user)
