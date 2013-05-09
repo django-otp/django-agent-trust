@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from time import mktime
 
+import django.conf
 from django.db import models
 
 from .conf import settings
@@ -15,8 +16,8 @@ class AgentSettings(models.Model):
 
     .. attribute:: user
 
-        *OneToOneField*: The :class:`~django.contrib.auth.models.User` this
-        belongs to.
+        *OneToOneField*: The :class:`~django.contrib.auth.models.User` (or
+        custom user model) this belongs to.
 
     .. attribute:: trust_days
 
@@ -29,13 +30,15 @@ class AgentSettings(models.Model):
         one of this user's agents before trust is revoked. ``None`` for no
         limit. Default is ``None``.
     """
-    user = models.OneToOneField('auth.User')
+    user = models.OneToOneField(getattr(django.conf.settings, 'AUTH_USER_MODEL', 'auth.User'))
     trust_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days a agent will remain trusted.")
     inactivity_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days allowed between requests before a agent's trust is revoked.")
     serial = models.IntegerField(default=0, help_text="Increment this to revoke all previously trusted agents.")
 
     def __unicode__(self):
-        return u'AgentSettings: {0}'.format(self.user.username)
+        username = self.user.get_username() if hasattr(self.user, 'get_username') else self.user.username
+
+        return u'AgentSettings: {0}'.format(username)
 
 
 class Agent(object):
@@ -48,7 +51,7 @@ class Agent(object):
     def __init__(self, user, is_trusted, trusted_at, trust_days, serial, session):
         self._user = user
         self._is_trusted = is_trusted
-        self._trusted_at = trusted_at
+        self._trusted_at = trusted_at.replace(microsecond=0) if (trusted_at is not None) else None
         self._trust_days = trust_days
         self._serial = serial
         self._session = session
@@ -140,7 +143,7 @@ class Agent(object):
 
     def to_jsonable(self):
         return {
-            'username': self.user.username,
+            'username': self.user.get_username() if hasattr(self.user, 'get_username') else self.user.username,
             'is_trusted': self.is_trusted,
             'trusted_at': self._trusted_at_timestamp(),
             'trust_days': self.trust_days,

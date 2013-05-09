@@ -24,8 +24,8 @@ class AgentMiddleware(object):
     tell you whether the user's agent has been trusted.
     """
     def __init__(self):
-        if django.VERSION < (1,4):
-            logger.warn('django_agent_trust requires Django 1.4 or higher')
+        if django.VERSION < (1, 4):
+            logger.error('django_agent_trust requires Django 1.4 or higher')
 
             raise MiddlewareNotUsed()
 
@@ -47,9 +47,8 @@ class AgentMiddleware(object):
 
         return response
 
-
     def _load_agent(self, request):
-        cookie_name = self._cookie_name(request.user.username)
+        cookie_name = self._cookie_name(self._get_username(request.user))
         default = b64encode('{}')
         max_age = self._max_cookie_age(request.user.agentsettings)
 
@@ -71,7 +70,7 @@ class AgentMiddleware(object):
 
         logger.debug('Decoded agent: {0}'.format(data))
 
-        if data.get('username') == user.username:
+        if data.get('username') == self._get_username(user):
             agent = Agent.from_jsonable(data, user)
             if self._should_discard_agent(agent):
                 agent = None
@@ -80,7 +79,8 @@ class AgentMiddleware(object):
             agent = Agent.untrusted_agent(user)
 
         logger.debug('Loaded agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
-            user.username, agent.is_trusted, agent.trusted_at, agent.serial)
+            self._get_username(user), agent.is_trusted, agent.trusted_at,
+            agent.serial)
         )
 
         return agent
@@ -95,13 +95,13 @@ class AgentMiddleware(object):
 
         return False
 
-
     def _save_agent(self, agent, response):
         logger.debug('Saving agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
-            agent.user.username, agent.is_trusted, agent.trusted_at, agent.serial)
+            self._get_username(agent.user), agent.is_trusted, agent.trusted_at,
+            agent.serial)
         )
 
-        cookie_name = self._cookie_name(agent.user.username)
+        cookie_name = self._cookie_name(self._get_username(agent.user))
         encoded = self._encode_cookie(agent, agent.user)
         max_age = self._max_cookie_age(agent.user.agentsettings)
 
@@ -113,17 +113,7 @@ class AgentMiddleware(object):
         )
 
     def _encode_cookie(self, agent, user):
-        if agent.is_trusted:
-            if agent.trusted_at is None:
-                agent.trusted_at = datetime.now().replace(microsecond=0)
-
-            if agent.serial < 0:
-                agent.serial = user.agentsettings.serial
-
-        encoded = b64encode(json.dumps(agent.to_jsonable()))
-
-        return encoded
-
+        return b64encode(json.dumps(agent.to_jsonable()))
 
     def _cookie_name(self, username):
         return '{0}-{1}'.format(settings.AGENT_COOKIE_NAME, username)
@@ -135,7 +125,7 @@ class AgentMiddleware(object):
         days = settings.AGENT_INACTIVITY_DAYS
 
         try:
-            days * 86400
+            int(days) * 86400
         except StandardError:
             raise ImproperlyConfigured('AGENT_INACTIVITY_DAYS must be a number.')
 
@@ -144,3 +134,9 @@ class AgentMiddleware(object):
             days = user_days
 
         return days * 86400
+
+    def _get_username(self, user):
+        """
+        Return the username of a user in a model- and version-indepenedent way.
+        """
+        return user.get_username() if hasattr(user, 'get_username') else user.username

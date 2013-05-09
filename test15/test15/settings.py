@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
 
     'django_agent_trust',
+    'test15.app',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -34,3 +35,5 @@ TEMPLATE_DIRS = [
 SECRET_KEY = 'PWuluw4x48GkT7JDPzlDQsBJC8pjIIiqodW9MuMYcU315YEkGJL41i5qooJsg3Tt'
 
 ROOT_URLCONF = 'django_agent_trust.tests.urls'
+
+AUTH_USER_MODEL = 'app.TestUser'

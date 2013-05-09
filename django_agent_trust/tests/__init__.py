@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
-from unittest import skipIf
 
 import django
+from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import ImproperlyConfigured
+from django.db import IntegrityError
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
-from django.contrib.auth.models import User
+from django.utils.unittest import skipIf
 
 from ..conf import settings
 from ..decorators import trusted_agent_required
@@ -16,22 +18,61 @@ from ..middleware import AgentMiddleware
 now = lambda: datetime.now().replace(microsecond=0)
 
 
-@skipIf(django.VERSION < (1,4), 'Requires Django 1.4')
-class AgentCodingTestCase(TestCase):
+@skipIf(django.VERSION < (1, 4), 'Requires Django 1.4')
+class AgentTrustTestCase(TestCase):
+    """
+    Base class with some custom-user-aware utilities.
+    """
+    @classmethod
+    def setUpClass(cls):
+        try:
+            from django.contrib.auth import get_user_model
+        except ImportError:
+            from django.contrib.auth.models import User
+            cls.User = User
+            cls.User.get_username = lambda self: self.username
+            cls.USERNAME_FIELD = 'username'
+        else:
+            cls.User = get_user_model()
+            cls.USERNAME_FIELD = cls.User.USERNAME_FIELD
+
+    def create_user(self, username, password):
+        """
+        Try to create a user, honoring the custom user model, if any. This may
+        raise an exception if the user model is too exotic for our purposes.
+        """
+        return self.User.objects.create_user(username, password=password)
+
+
+class AgentCodingTestCase(AgentTrustTestCase):
     """
     Tests as much of the middleware as possible without the request/response
     cycle. Any tests that need to manipulate the date will be at this level.
     """
-    fixtures = ['tests/alice.yaml', 'tests/bob.yaml']
-
     def setUp(self):
-        self.alice = User.objects.get(username='alice')
-        self.bob = User.objects.get(username='bob')
+        try:
+            self.alice = self.create_user('alice', 'alice')
+            AgentSettings.objects.create(user=self.alice)
+            self.bob = self.create_user('bob', 'bob')
+        except IntegrityError:
+            self.skipTest(u"Unable to create a test user.")
+
         self.middleware = AgentMiddleware()
 
     @property
     def agentsettings(self):
         return self.alice.agentsettings
+
+    def test_coverage(self):
+        unicode(self.agentsettings)
+
+    def test_trust_anonymous(self):
+        with self.assertRaises(StandardError):
+            Agent.trusted_agent(AnonymousUser())
+
+    def test_session_anonymous(self):
+        with self.assertRaises(StandardError):
+            Agent.session_agent(AnonymousUser(), 0)
 
     def test_untrusted(self):
         agent = self._roundtrip_agent(Agent.untrusted_agent(self.alice))
@@ -135,6 +176,15 @@ class AgentCodingTestCase(TestCase):
 
         self.assert_(not agent.is_trusted)
 
+    def test_inactivity_config(self):
+        with self.assertRaises(ImproperlyConfigured):
+            with settings(AGENT_INACTIVITY_DAYS=()):
+                self.middleware._max_cookie_age(self.agentsettings)
+
+    def test_inactivity_precedence(self):
+        self.agentsettings.inactivity_days = 30
+
+        self.assertEqual(self.middleware._max_cookie_age(self.agentsettings), 30 * 86400)
 
     def _roundtrip(self, *args, **kwargs):
         agent = Agent(self.alice, *args, **kwargs)
@@ -151,12 +201,14 @@ class AgentCodingTestCase(TestCase):
         return self.middleware._decode_cookie(encoded, self.alice)
 
 
-@skipIf(django.VERSION < (1,4), 'Requires Django 1.4')
-class DecoratorTest(TestCase):
-    fixtures = ['tests/alice.yaml']
-
+class DecoratorTest(AgentTrustTestCase):
     def setUp(self):
-        self.alice = User.objects.get(username='alice')
+        try:
+            self.alice = self.create_user('alice', 'alice')
+            AgentSettings.objects.create(user=self.alice)
+        except IntegrityError:
+            self.skipTest(u"Unable to create a test user.")
+
         self.factory = RequestFactory()
 
     def test_view_1_untrusted(self):
@@ -200,23 +252,29 @@ class DecoratorTest(TestCase):
 def decorated_view_1(request):
     return HttpResponse()
 
+
 @trusted_agent_required()
 def decorated_view_2(request):
     return HttpResponse()
 
 
-@skipIf(django.VERSION < (1,4), 'Requires Django 1.4')
-class HttpTestCase(TestCase):
+class HttpTestCase(AgentTrustTestCase):
     """
     Tests that exercise the full request/response cycle. These are less
     precise, but touch more code.
     """
-    fixtures = ['tests/alice.yaml', 'tests/bob.yaml']
     urls = 'django_agent_trust.tests.urls'
 
     def setUp(self):
-        self.alice = AgentClient('alice')
-        self.bob = AgentClient('bob')
+        try:
+            user = self.create_user('alice', 'alice')
+            AgentSettings.objects.create(user=user)
+            self.create_user('bob', 'bob')
+        except IntegrityError:
+            self.skipTest(u"Unable to create a test user.")
+        else:
+            self.alice = AgentClient('alice')
+            self.bob = AgentClient('bob')
 
     def test_anonymous(self):
         response = self.alice.get_restricted()
