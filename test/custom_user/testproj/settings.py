@@ -17,7 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
 
     'django_agent_trust',
-    'test15.app',
+    'testproj.app',
 ]
 
 MIDDLEWARE_CLASSES = [
