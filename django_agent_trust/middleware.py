@@ -2,6 +2,7 @@ from base64 import b64encode, b64decode
 from datetime import datetime
 import json
 import logging
+from warnings import warn
 
 import django
 from django.core.exceptions import ImproperlyConfigured, MiddlewareNotUsed
@@ -25,8 +26,7 @@ class AgentMiddleware(object):
     """
     def __init__(self):
         if django.VERSION < (1, 4):
-            logger.error('django_agent_trust requires Django 1.4 or higher')
-
+            warn('django_agent_trust requires Django 1.4 or higher')
             raise MiddlewareNotUsed()
 
     def process_request(self, request):
