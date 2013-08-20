@@ -314,6 +314,17 @@ class HttpTestCase(AgentTrustTestCase):
 
         self.assertEquals(response.status_code, 302)
 
+    def test_exotic_username(self):
+        user = self.create_user('charlie@example.com', 'charlie')
+        AgentSettings.objects.create(user=user)
+        charlie = AgentClient('charlie@example.com', 'charlie')
+
+        charlie.login()
+        charlie.trust()
+        response = charlie.get_restricted()
+
+        self.assertEquals(response.status_code, 200)
+
     def test_persist(self):
         self.alice.login()
         self.alice.trust()
@@ -395,13 +406,14 @@ class HttpTestCase(AgentTrustTestCase):
 
 
 class AgentClient(Client):
-    def __init__(self, username):
+    def __init__(self, username, password=None):
         super(AgentClient, self).__init__()
 
         self.username = username
+        self.password = password if (password is not None) else username
 
     def login(self):
-        return self.post('/login/', {'username': self.username, 'password': self.username})
+        return self.post('/login/', {'username': self.username, 'password': self.password})
 
     def logout(self):
         return self.post('/logout/')

@@ -1,5 +1,6 @@
 from base64 import b64encode, b64decode
 from datetime import datetime
+from hashlib import md5
 import json
 import logging
 from warnings import warn
@@ -116,7 +117,9 @@ class AgentMiddleware(object):
         return b64encode(json.dumps(agent.to_jsonable()))
 
     def _cookie_name(self, username):
-        return '{0}-{1}'.format(settings.AGENT_COOKIE_NAME, username)
+        suffix = md5(username.encode('utf-8')).hexdigest()[16:]
+
+        return '{0}-{1}'.format(settings.AGENT_COOKIE_NAME, suffix)
 
     def _max_cookie_age(self, agentsettings):
         """

@@ -1,5 +1,18 @@
 .. vim: ft=rst nospell tw=80
 
+
+v0.1.7 - August 19, 2013 - Fix for usernames with symbols
+---------------------------------------------------------
+
+- Cookie names now incorporate a hash of the username rather than the username
+  itself.
+
+.. warning::
+
+    Updating to this version will effectively revoke all previously trusted
+    agents.
+
+
 v0.1.6 - May 9, 2013 - Django 1.5 compatibility
 -----------------------------------------------
 
