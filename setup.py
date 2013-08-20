@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
     name='django-agent-trust',
-    version='0.1.6',
+    version='0.1.7',
     description=u"A framework for managing agent trust, such as public vs. private computers.",
     long_description=open('README').read(),
     author='Peter Sagerson',

@@ -15,7 +15,7 @@ class TestUserManager(BaseUserManager):
 
 class TestUser(AbstractBaseUser):
     identifier = models.CharField(max_length=40, unique=True, db_index=True)
-    mystery_field = models.IntegerField()
+    mystery_field = models.IntegerField(default=0)
 
     objects = TestUserManager()
 
