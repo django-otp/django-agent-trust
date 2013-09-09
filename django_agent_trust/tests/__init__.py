@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import six
 
 import django
 from django.contrib.auth.models import AnonymousUser
@@ -55,7 +56,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
             AgentSettings.objects.create(user=self.alice)
             self.bob = self.create_user('bob', 'bob')
         except IntegrityError:
-            self.skipTest(u"Unable to create a test user.")
+            self.skipTest("Unable to create a test user.")
 
         self.middleware = AgentMiddleware()
 
@@ -64,21 +65,21 @@ class AgentCodingTestCase(AgentTrustTestCase):
         return self.alice.agentsettings
 
     def test_coverage(self):
-        unicode(self.agentsettings)
+        six.u(str(self.agentsettings))
 
     def test_trust_anonymous(self):
-        with self.assertRaises(StandardError):
+        with self.assertRaises(Exception):
             Agent.trusted_agent(AnonymousUser())
 
     def test_session_anonymous(self):
-        with self.assertRaises(StandardError):
+        with self.assertRaises(Exception):
             Agent.session_agent(AnonymousUser(), 0)
 
     def test_untrusted(self):
         agent = self._roundtrip_agent(Agent.untrusted_agent(self.alice))
 
-        self.assert_(not agent.is_trusted)
-        self.assert_(not agent.is_session)
+        self.assertTrue(not agent.is_trusted)
+        self.assertTrue(not agent.is_session)
         self.assertEqual(agent.trusted_at, None)
         self.assertEqual(agent.serial, -1)
 
@@ -87,8 +88,8 @@ class AgentCodingTestCase(AgentTrustTestCase):
 
         agent = self._roundtrip(True, trusted_at, None, 1, None)
 
-        self.assert_(agent.is_trusted)
-        self.assert_(not agent.is_session)
+        self.assertTrue(agent.is_trusted)
+        self.assertTrue(not agent.is_session)
         self.assertEqual(agent.trusted_at, trusted_at)
         self.assertEqual(agent.serial, 1)
 
@@ -98,7 +99,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
         with settings(AGENT_TRUST_DAYS=5):
             agent = self._roundtrip(True, trusted_at, None, 1, None)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_expired_user_only(self):
         trusted_at = now() - timedelta(days=7)
@@ -106,14 +107,14 @@ class AgentCodingTestCase(AgentTrustTestCase):
 
         agent = self._roundtrip(True, trusted_at, None, 1, None)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_expired_agent_only(self):
         trusted_at = now() - timedelta(days=7)
 
         agent = self._roundtrip(True, trusted_at, 5, 1, None)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_expired_global_precedence(self):
         trusted_at = now() - timedelta(days=7)
@@ -122,7 +123,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
         with settings(AGENT_TRUST_DAYS=5):
             agent = self._roundtrip(True, trusted_at, 14, 1, None)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_expired_user_precedence(self):
         trusted_at = now() - timedelta(days=7)
@@ -131,7 +132,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
         with settings(AGENT_TRUST_DAYS=14):
             agent = self._roundtrip(True, trusted_at, 14, 1, None)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_expired_agent_precedence(self):
         trusted_at = now() - timedelta(days=7)
@@ -140,7 +141,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
         with settings(AGENT_TRUST_DAYS=14):
             agent = self._roundtrip(True, trusted_at, 5, 1, None)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_expired_none(self):
         trusted_at = now() - timedelta(days=7)
@@ -149,7 +150,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
         with settings(AGENT_TRUST_DAYS=14):
             agent = self._roundtrip(True, trusted_at, 14, 1, None)
 
-        self.assert_(agent.is_trusted)
+        self.assertTrue(agent.is_trusted)
         self.assertEqual(agent.trusted_at, trusted_at)
         self.assertEqual(agent.serial, 1)
 
@@ -159,13 +160,13 @@ class AgentCodingTestCase(AgentTrustTestCase):
 
         agent = self._roundtrip(True, trusted_at, None, 1, None)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_session(self):
         agent = self._roundtrip(True, now(), None, 1, '1234')
 
-        self.assert_(agent.is_trusted)
-        self.assert_(agent.is_session)
+        self.assertTrue(agent.is_trusted)
+        self.assertTrue(agent.is_session)
 
     def test_cross_user(self):
         AgentSettings.objects.get_or_create(user=self.bob)
@@ -174,7 +175,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
         encoded = self.middleware._encode_cookie(agent, self.alice)
         agent = self.middleware._decode_cookie(encoded, self.bob)
 
-        self.assert_(not agent.is_trusted)
+        self.assertTrue(not agent.is_trusted)
 
     def test_inactivity_config(self):
         with self.assertRaises(ImproperlyConfigured):
@@ -207,7 +208,7 @@ class DecoratorTest(AgentTrustTestCase):
             self.alice = self.create_user('alice', 'alice')
             AgentSettings.objects.create(user=self.alice)
         except IntegrityError:
-            self.skipTest(u"Unable to create a test user.")
+            self.skipTest("Unable to create a test user.")
 
         self.factory = RequestFactory()
 
@@ -271,7 +272,7 @@ class HttpTestCase(AgentTrustTestCase):
             AgentSettings.objects.create(user=user)
             self.create_user('bob', 'bob')
         except IntegrityError:
-            self.skipTest(u"Unable to create a test user.")
+            self.skipTest("Unable to create a test user.")
         else:
             self.alice = AgentClient('alice')
             self.bob = AgentClient('bob')
@@ -279,32 +280,32 @@ class HttpTestCase(AgentTrustTestCase):
     def test_anonymous(self):
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_anon_trust(self):
         self.alice.trust()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_authenticated(self):
         self.alice.login()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_trusted(self):
         self.alice.login()
         self.alice.trust()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_anon(self):
         self.alice.trust()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_revoked(self):
         self.alice.login()
@@ -312,7 +313,7 @@ class HttpTestCase(AgentTrustTestCase):
         self.alice.revoke()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_exotic_username(self):
         user = self.create_user('charlie@example.com', 'charlie')
@@ -323,7 +324,7 @@ class HttpTestCase(AgentTrustTestCase):
         charlie.trust()
         response = charlie.get_restricted()
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_persist(self):
         self.alice.login()
@@ -332,14 +333,14 @@ class HttpTestCase(AgentTrustTestCase):
         self.alice.login()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_trusted_session(self):
         self.alice.login()
         self.alice.trust_session()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_old_session(self):
         self.alice.login()
@@ -348,13 +349,13 @@ class HttpTestCase(AgentTrustTestCase):
         self.alice.login()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_anon_session(self):
         self.alice.trust_session()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_replace_trust(self):
         self.alice.login()
@@ -364,7 +365,7 @@ class HttpTestCase(AgentTrustTestCase):
         self.alice.login()
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_other_trusted(self):
         self.alice.login()
@@ -374,7 +375,7 @@ class HttpTestCase(AgentTrustTestCase):
         self.bob.login()
         response = self.bob.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     def test_other_revoked(self):
         self.alice.login()
@@ -387,7 +388,7 @@ class HttpTestCase(AgentTrustTestCase):
 
         response = self.alice.get_restricted()
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_revoke_others(self):
         alice1 = AgentClient('alice')
@@ -402,7 +403,7 @@ class HttpTestCase(AgentTrustTestCase):
 
         response = alice1.get_restricted()
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
 
 class AgentClient(Client):
