@@ -50,12 +50,11 @@ class AgentMiddleware(object):
 
     def _load_agent(self, request):
         cookie_name = self._cookie_name(self._get_username(request.user))
-        default = b64encode('{}')
+        default = b64encode('{}'.encode('utf-8'))
         max_age = self._max_cookie_age(request.user.agentsettings)
 
         encoded = request.get_signed_cookie(cookie_name, default=default,
-            max_age=max_age
-        )
+                                            max_age=max_age)
 
         agent = self._decode_cookie(encoded, request.user)
 
@@ -67,7 +66,11 @@ class AgentMiddleware(object):
     def _decode_cookie(self, encoded, user):
         agent = None
 
-        data = json.loads(b64decode(encoded))
+        # The type of encoded seems inconsistent in the unit tests.
+        if hasattr(encoded, 'encode'):
+            encoded = encoded.encode('utf-8')
+
+        data = json.loads(b64decode(encoded).decode('utf-8'))
 
         logger.debug('Decoded agent: {0}'.format(data))
 
@@ -107,14 +110,13 @@ class AgentMiddleware(object):
         max_age = self._max_cookie_age(agent.user.agentsettings)
 
         response.set_signed_cookie(cookie_name, encoded, max_age=max_age,
-            path=settings.AGENT_COOKIE_PATH,
-            domain=settings.AGENT_COOKIE_DOMAIN,
-            secure=settings.AGENT_COOKIE_SECURE,
-            httponly=settings.AGENT_COOKIE_HTTPONLY
-        )
+                                   path=settings.AGENT_COOKIE_PATH,
+                                   domain=settings.AGENT_COOKIE_DOMAIN,
+                                   secure=settings.AGENT_COOKIE_SECURE,
+                                   httponly=settings.AGENT_COOKIE_HTTPONLY)
 
     def _encode_cookie(self, agent, user):
-        return b64encode(json.dumps(agent.to_jsonable()))
+        return b64encode(json.dumps(agent.to_jsonable()).encode('utf-8')).decode('utf-8')
 
     def _cookie_name(self, username):
         suffix = md5(username.encode('utf-8')).hexdigest()[16:]
@@ -129,7 +131,7 @@ class AgentMiddleware(object):
 
         try:
             int(days) * 86400
-        except StandardError:
+        except Exception:
             raise ImproperlyConfigured('AGENT_INACTIVITY_DAYS must be a number.')
 
         user_days = agentsettings.inactivity_days

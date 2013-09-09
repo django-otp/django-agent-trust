@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import six
 from time import mktime
 
 import django.conf
@@ -35,10 +36,16 @@ class AgentSettings(models.Model):
     inactivity_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days allowed between requests before a agent's trust is revoked.")
     serial = models.IntegerField(default=0, help_text="Increment this to revoke all previously trusted agents.")
 
+    def __str__(self):
+        if six.PY3:
+            return self.__unicode__()
+        else:
+            return unicode(self).encode('utf-8')
+
     def __unicode__(self):
         username = self.user.get_username() if hasattr(self.user, 'get_username') else self.user.username
 
-        return u'AgentSettings: {0}'.format(username)
+        return six.u("AgentSettings: {0}".format(username))
 
 
 class Agent(object):
@@ -126,13 +133,10 @@ class Agent(object):
         if (not self.is_trusted) or (self.trusted_at is None):
             return None
 
-        prefs = filter(
-            lambda d: d is not None, [
-                settings.AGENT_TRUST_DAYS,
-                self.user.agentsettings.trust_days,
-                self.trust_days,
-            ]
-        )
+        prefs = [d for d in [settings.AGENT_TRUST_DAYS,
+                             self.user.agentsettings.trust_days,
+                             self.trust_days]
+                 if d is not None]
 
         if len(prefs) > 0:
             expiration = self.trusted_at + timedelta(days=min(prefs))

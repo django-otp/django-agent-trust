@@ -14,13 +14,15 @@ def trusted_agent_required(view=None, redirect_field_name='next', login_url=None
 
     The default value for ``login_url`` is :setting:`AGENT_LOGIN_URL`.
     """
+    if login_url is None:
+        login_url = settings.AGENT_LOGIN_URL
+
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
             enforcer = user_passes_test(lambda u: request.agent.is_trusted,
-                redirect_field_name=redirect_field_name,
-                login_url=(login_url or settings.AGENT_LOGIN_URL)
-            )
+                                        redirect_field_name=redirect_field_name,
+                                        login_url=login_url)
 
             return enforcer(view_func)(request, *args, **kwargs)
 
