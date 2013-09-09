@@ -17,13 +17,16 @@ setup(
     url='https://bitbucket.org/psagers/django-agent-trust',
     license='BSD',
     install_requires=[
-        'six',
         'django>=1.4',
     ],
     classifiers=[
-        'Development Status :: 4 - Beta',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Topic :: Security',

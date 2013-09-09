@@ -50,10 +50,10 @@ class AgentMiddleware(object):
 
     def _load_agent(self, request):
         cookie_name = self._cookie_name(self._get_username(request.user))
-        default = b64encode('{}'.encode('utf-8'))
         max_age = self._max_cookie_age(request.user.agentsettings)
 
-        encoded = request.get_signed_cookie(cookie_name, default=default,
+        # 'e30=' is base64 for '{}'
+        encoded = request.get_signed_cookie(cookie_name, default='e30=',
                                             max_age=max_age)
 
         agent = self._decode_cookie(encoded, request.user)
@@ -66,11 +66,8 @@ class AgentMiddleware(object):
     def _decode_cookie(self, encoded, user):
         agent = None
 
-        # The type of encoded seems inconsistent in the unit tests.
-        if hasattr(encoded, 'encode'):
-            encoded = encoded.encode('utf-8')
-
-        data = json.loads(b64decode(encoded).decode('utf-8'))
+        content = b64decode(encoded.encode('utf-8')).decode('utf-8')
+        data = json.loads(content)
 
         logger.debug('Decoded agent: {0}'.format(data))
 
@@ -116,7 +113,11 @@ class AgentMiddleware(object):
                                    httponly=settings.AGENT_COOKIE_HTTPONLY)
 
     def _encode_cookie(self, agent, user):
-        return b64encode(json.dumps(agent.to_jsonable()).encode('utf-8')).decode('utf-8')
+        data = agent.to_jsonable()
+        content = json.dumps(data)
+        encoded = b64encode(content.encode('utf-8')).decode('utf-8')
+
+        return encoded
 
     def _cookie_name(self, username):
         suffix = md5(username.encode('utf-8')).hexdigest()[16:]
