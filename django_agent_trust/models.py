@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-import six
 from time import mktime
 
 import django.conf
 from django.db import models
+from django.utils import six
 
 from .conf import settings
 

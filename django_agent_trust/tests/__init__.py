@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import six
 
 import django
 from django.contrib.auth.models import AnonymousUser
@@ -8,6 +7,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
+from django.utils import six
 from django.utils.unittest import skipIf
 
 from ..conf import settings

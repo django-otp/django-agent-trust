@@ -1,6 +1,5 @@
-from six import iteritems
-
 import django.conf
+from django.utils.six import iteritems
 
 
 class Settings(object):
