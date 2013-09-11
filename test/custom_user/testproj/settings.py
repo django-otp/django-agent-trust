@@ -34,6 +34,6 @@ TEMPLATE_DIRS = [
 
 SECRET_KEY = 'PWuluw4x48GkT7JDPzlDQsBJC8pjIIiqodW9MuMYcU315YEkGJL41i5qooJsg3Tt'
 
-ROOT_URLCONF = 'django_agent_trust.tests.urls'
+ROOT_URLCONF = 'django_agent_trust.test.urls'
 
 AUTH_USER_MODEL = 'app.TestUser'

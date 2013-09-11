@@ -12,7 +12,7 @@ setup(
     author_email='psagersDjwublJf@ignorare.net',
     packages=[
         'django_agent_trust',
-        'django_agent_trust.tests',
+        'django_agent_trust.test',
     ],
     url='https://bitbucket.org/psagers/django-agent-trust',
     license='BSD',

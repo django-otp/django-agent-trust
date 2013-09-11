@@ -10,10 +10,10 @@ from django.test.client import Client, RequestFactory
 from django.utils import six
 from django.utils.unittest import skipIf
 
-from ..conf import settings
-from ..decorators import trusted_agent_required
-from ..models import Agent, AgentSettings
-from ..middleware import AgentMiddleware
+from .conf import settings
+from .decorators import trusted_agent_required
+from .models import Agent, AgentSettings
+from .middleware import AgentMiddleware
 
 
 now = lambda: datetime.now().replace(microsecond=0)
@@ -264,7 +264,7 @@ class HttpTestCase(AgentTrustTestCase):
     Tests that exercise the full request/response cycle. These are less
     precise, but touch more code.
     """
-    urls = 'django_agent_trust.tests.urls'
+    urls = 'django_agent_trust.test.urls'
 
     def setUp(self):
         try:
