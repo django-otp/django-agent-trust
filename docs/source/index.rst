@@ -7,9 +7,8 @@ django-agent-trust
 Installation
 ------------
 
-django-agent-trust requires at least Python 2.6 and Django 1.4. It also depends
-on :mod:`django.contrib.auth`.
-
+django-agent-trust supports Python 2.6, 2.7, and 3.3+. It requires at least
+Django 1.4 with :mod:`django.contrib.auth`.
 
     #. Add ``'django_agent_trust'`` to :setting:`INSTALLED_APPS`.
     #. Add ``'django_agent_trust.middleware.AgentMiddleware'`` to
