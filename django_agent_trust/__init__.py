@@ -1,7 +1,5 @@
 from random import randrange
 
-from .models import Agent, SESSION_TOKEN_KEY
-
 
 def trust_agent(request, trust_days=None):
     """
@@ -13,6 +11,8 @@ def trust_agent(request, trust_days=None):
     :param float trust_days: The number of days to trust this agent. ``None``
         for no agent-specific limit.
     """
+    from .models import Agent
+
     if request.user.is_authenticated():
         request.agent = Agent.trusted_agent(request.user, trust_days)
 
@@ -27,6 +27,8 @@ def trust_session(request):
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
+    from .models import Agent, SESSION_TOKEN_KEY
+
     if request.user.is_authenticated():
         # We need a token to link this agent to the current session. It's
         # strictly internal, so it doesn't have to be cryptographically sound,
@@ -44,6 +46,8 @@ def revoke_agent(request):
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
+    from .models import Agent
+
     request.agent = Agent.untrusted_agent(request.user)
 
 
