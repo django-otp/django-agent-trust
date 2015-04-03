@@ -8,7 +8,10 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 from django.utils import six
-from django.utils.unittest import skipIf
+if django.VERSION < (1, 7):
+    from django.utils import unittest
+else:
+    import unittest
 
 from .conf import settings
 from .decorators import trusted_agent_required
@@ -19,13 +22,15 @@ from .middleware import AgentMiddleware
 now = lambda: datetime.now().replace(microsecond=0)
 
 
-@skipIf(django.VERSION < (1, 4), 'Requires Django 1.4')
+@unittest.skipIf(django.VERSION < (1, 4), 'Requires Django 1.4')
 class AgentTrustTestCase(TestCase):
     """
     Base class with some custom-user-aware utilities.
     """
     @classmethod
     def setUpClass(cls):
+        super(AgentTrustTestCase, cls).setUpClass()
+
         try:
             from django.contrib.auth import get_user_model
         except ImportError:
