@@ -5,13 +5,14 @@ from setuptools import setup
 
 setup(
     name='django-agent-trust',
-    version='0.1.9',
+    version='0.2.0',
     description="A framework for managing agent trust, such as public vs. private computers.",
     long_description=open('README').read(),
     author='Peter Sagerson',
     author_email='psagersDjwublJf@ignorare.net',
     packages=[
         'django_agent_trust',
+        'django_agent_trust.migrations',
         'django_agent_trust.test',
     ],
     url='https://bitbucket.org/psagers/django-agent-trust',
