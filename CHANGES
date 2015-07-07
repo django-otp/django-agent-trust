@@ -1,5 +1,16 @@
 .. vim: ft=rst nospell tw=80
 
+v0.2.1 - July 7, 2015 - South migration
+---------------------------------------
+
+- Adds an initial migration for Django < 1.7 with South.
+
+.. warning::
+
+    If you're using South, you'll need to run ``manage.py migrate --fake
+    django_agent_trust 0001`` after upgrading.
+
+
 v0.2.0 - May 22, 2015 - Djano migration
 ---------------------------------------
 
