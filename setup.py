@@ -13,6 +13,7 @@ setup(
     packages=[
         'django_agent_trust',
         'django_agent_trust.migrations',
+        'django_agent_trust.south_migrations',
         'django_agent_trust.test',
     ],
     url='https://bitbucket.org/psagers/django-agent-trust',

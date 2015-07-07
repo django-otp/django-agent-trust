@@ -47,7 +47,7 @@ class AgentSettings(models.Model):
     def __unicode__(self):
         username = self.user.get_username() if hasattr(self.user, 'get_username') else self.user.username
 
-        return six.u("AgentSettings: {0}".format(username))
+        return u"AgentSettings: {0}".format(username)
 
 
 class Agent(object):
