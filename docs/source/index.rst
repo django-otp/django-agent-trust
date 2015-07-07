@@ -18,6 +18,13 @@ Django 1.4 with :mod:`django.contrib.auth`.
        ``'django_agent_trust.context_processors.agent'`` to
        :setting:`TEMPLATE_CONTEXT_PROCESSORS`.
 
+.. warning::
+
+    Version 0.2.0 added Django migrations and 0.2.1 added the corresponding
+    South migrations. If you're upgrading from a previous version, you may need
+    to ``migrate --fake-initial django_agent_trust`` (Django 1.8+) or ``migrate
+    --fake django_agent_trust 0001`` (South).
+
 
 Assessing Trust
 ---------------
