@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import sys
 
 import django
 from django.contrib.auth.models import AnonymousUser
@@ -8,15 +9,23 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 from django.utils import six
-if django.VERSION < (1, 7):
+
+if django.VERSION < (1, 5):
+    override_settings = lambda *args, **kwargs: lambda x: x
+elif django.VERSION < (1, 7):
+    from django.test.utils import override_settings
+else:
+    from django.test import override_settings
+
+if sys.version_info < (2, 7):
     from django.utils import unittest
 else:
     import unittest
 
 from .conf import settings
 from .decorators import trusted_agent_required
-from .models import Agent, AgentSettings
 from .middleware import AgentMiddleware
+from .models import Agent, AgentSettings
 
 
 now = lambda: datetime.now().replace(microsecond=0)
@@ -264,13 +273,12 @@ def decorated_view_2(request):
     return HttpResponse()
 
 
+@override_settings(ROOT_URLCONF='django_agent_trust.test.urls')
 class HttpTestCase(AgentTrustTestCase):
     """
     Tests that exercise the full request/response cycle. These are less
     precise, but touch more code.
     """
-    urls = 'django_agent_trust.test.urls'
-
     def setUp(self):
         try:
             user = self.create_user('alice', 'alice')
@@ -409,6 +417,10 @@ class HttpTestCase(AgentTrustTestCase):
         response = alice1.get_restricted()
 
         self.assertEqual(response.status_code, 302)
+
+
+if django.VERSION < (1, 8):
+    HttpTestCase.urls = 'django_agent_trust.test.urls'
 
 
 class AgentClient(Client):

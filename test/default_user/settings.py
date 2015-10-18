@@ -27,6 +27,16 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'DIRS': [
+            project_path('templates'),
+        ]
+    },
+]
+
 TEMPLATE_DIRS = [
     project_path('templates'),
 ]
