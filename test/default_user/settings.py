@@ -8,7 +8,12 @@ def project_path(path):
 
 DEBUG = True
 
-DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3'}}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+}
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -19,12 +24,25 @@ INSTALLED_APPS = [
     'django_agent_trust',
 ]
 
+# Django <1.10
 MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_agent_trust.middleware.AgentMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+]
+
+# Django >=1.10
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_agent_trust.middleware.AgentMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 TEMPLATES = [

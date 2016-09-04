@@ -12,11 +12,11 @@ Django 1.4 with :mod:`django.contrib.auth`.
 
     #. Add ``'django_agent_trust'`` to :setting:`INSTALLED_APPS`.
     #. Add ``'django_agent_trust.middleware.AgentMiddleware'`` to
-       :setting:`MIDDLEWARE_CLASSES`. It must come after
-       :class:`~django.contrib.auth.middleware.AuthenticationMiddleware`.
+       :setting:`MIDDLEWARE` or :setting:`MIDDLEWARE_CLASSES`. It must come
+       after :class:`~django.contrib.auth.middleware.AuthenticationMiddleware`.
     #. If you want to access agent information in templates, add
-       ``'django_agent_trust.context_processors.agent'`` to
-       :setting:`TEMPLATE_CONTEXT_PROCESSORS`.
+       ``'django_agent_trust.context_processors.agent'`` to your template
+       context processors.
 
 .. warning::
 
