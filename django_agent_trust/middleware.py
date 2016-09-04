@@ -3,10 +3,13 @@ from datetime import datetime
 from hashlib import md5
 import json
 import logging
-from warnings import warn
 
-import django
-from django.core.exceptions import ImproperlyConfigured, MiddlewareNotUsed
+from django.core.exceptions import ImproperlyConfigured
+
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
 
 from .conf import settings
 from .models import AgentSettings, Agent, SESSION_TOKEN_KEY
@@ -15,7 +18,7 @@ from .models import AgentSettings, Agent, SESSION_TOKEN_KEY
 logger = logging.getLogger(__name__)
 
 
-class AgentMiddleware(object):
+class AgentMiddleware(MiddlewareMixin):
     """
     This must be installed after
     :class:`~django.contrib.auth.middleware.AuthenticationMiddleware` to manage
@@ -24,12 +27,8 @@ class AgentMiddleware(object):
     This middleware will set ``request.agent`` to an instance of
     :class:`django_agent_trust.models.Agent`. ``request.agent.is_trusted`` will
     tell you whether the user's agent has been trusted.
-    """
-    def __init__(self):
-        if django.VERSION < (1, 4):
-            warn('django_agent_trust requires Django 1.4 or higher')
-            raise MiddlewareNotUsed()
 
+    """
     def process_request(self, request):
         if request.user.is_authenticated():
             AgentSettings.objects.get_or_create(user=request.user)
