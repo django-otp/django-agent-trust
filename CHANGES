@@ -1,5 +1,13 @@
 .. vim: ft=rst nospell tw=80
 
+v0.3.0 - October 7, 2017 - Forward compatibility
+------------------------------------------------
+
+- Drop support for obsolete versions of Python and Django.
+
+- Various cleanup and reorganization for forward compatibility.
+
+
 v0.2.2 - September 4, 2016 - Django 1.10
 ----------------------------------------
 
