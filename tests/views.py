@@ -1,8 +1,10 @@
-from django.http import HttpResponse
-from django.views.generic.base import View
-from django.utils.decorators import method_decorator
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from django_agent_trust import trust_agent, trust_session, revoke_agent, revoke_other_agents
+from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from django.views.generic.base import View
+
+from django_agent_trust import revoke_agent, revoke_other_agents, trust_agent, trust_session
 from django_agent_trust.decorators import trusted_agent_required
 
 
