@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
-import sys
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+from datetime import timedelta
 
 import django
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
@@ -9,54 +11,31 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 from django.utils import six
+import django.utils.timezone
 
-if django.VERSION < (1, 5):
-    override_settings = lambda *args, **kwargs: lambda x: x
-elif django.VERSION < (1, 7):
-    from django.test.utils import override_settings
-else:
-    from django.test import override_settings
-
-if sys.version_info < (2, 7):
-    from django.utils import unittest
-else:
-    import unittest
-
-from .conf import settings
-from .decorators import trusted_agent_required
-from .middleware import AgentMiddleware
-from .models import Agent, AgentSettings
+from django_agent_trust.conf import settings
+from django_agent_trust.decorators import trusted_agent_required
+from django_agent_trust.middleware import AgentMiddleware
+from django_agent_trust.models import Agent, AgentSettings
 
 
-now = lambda: datetime.now().replace(microsecond=0)
+def now():
+    return django.utils.timezone.now().replace(microsecond=0)
 
 
-@unittest.skipIf(django.VERSION < (1, 4), 'Requires Django 1.4')
 class AgentTrustTestCase(TestCase):
     """
     Base class with some custom-user-aware utilities.
     """
-    @classmethod
-    def setUpClass(cls):
-        super(AgentTrustTestCase, cls).setUpClass()
-
-        try:
-            from django.contrib.auth import get_user_model
-        except ImportError:
-            from django.contrib.auth.models import User
-            cls.User = User
-            cls.User.get_username = lambda self: self.username
-            cls.USERNAME_FIELD = 'username'
-        else:
-            cls.User = get_user_model()
-            cls.USERNAME_FIELD = cls.User.USERNAME_FIELD
-
     def create_user(self, username, password):
         """
-        Try to create a user, honoring the custom user model, if any. This may
-        raise an exception if the user model is too exotic for our purposes.
+        Try to create a user, honoring the custom user model, if any.
+
+        This may raise an exception if the user model is too exotic for our
+        purposes.
+
         """
-        return self.User.objects.create_user(username, password=password)
+        return get_user_model().objects.create_user(username, password=password)
 
 
 class AgentCodingTestCase(AgentTrustTestCase):
@@ -65,12 +44,10 @@ class AgentCodingTestCase(AgentTrustTestCase):
     cycle. Any tests that need to manipulate the date will be at this level.
     """
     def setUp(self):
-        try:
-            self.alice = self.create_user('alice', 'alice')
-            AgentSettings.objects.create(user=self.alice)
-            self.bob = self.create_user('bob', 'bob')
-        except IntegrityError:
-            self.skipTest("Unable to create a test user.")
+        self.alice = self.create_user('alice', 'alice')
+        AgentSettings.objects.create(user=self.alice)
+
+        self.bob = self.create_user('bob', 'bob')
 
         self.middleware = AgentMiddleware()
 
@@ -273,7 +250,6 @@ def decorated_view_2(request):
     return HttpResponse()
 
 
-@override_settings(ROOT_URLCONF='django_agent_trust.test.urls')
 class HttpTestCase(AgentTrustTestCase):
     """
     Tests that exercise the full request/response cycle. These are less
@@ -417,10 +393,6 @@ class HttpTestCase(AgentTrustTestCase):
         response = alice1.get_restricted()
 
         self.assertEqual(response.status_code, 302)
-
-
-if django.VERSION < (1, 8):
-    HttpTestCase.urls = 'django_agent_trust.test.urls'
 
 
 class AgentClient(Client):

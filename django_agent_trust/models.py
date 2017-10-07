@@ -1,11 +1,11 @@
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from datetime import datetime, timedelta
 from time import mktime
 
 import django.conf
 from django.db import models
-from django.utils import six
+from django.utils.encoding import python_2_unicode_compatible
 
 from .conf import settings
 
@@ -13,6 +13,7 @@ from .conf import settings
 SESSION_TOKEN_KEY = 'django-agent-trust-token'
 
 
+@python_2_unicode_compatible
 class AgentSettings(models.Model):
     """
     Agent trust settings for a single user.
@@ -33,21 +34,13 @@ class AgentSettings(models.Model):
         one of this user's agents before trust is revoked. ``None`` for no
         limit. Default is ``None``.
     """
-    user = models.OneToOneField(getattr(django.conf.settings, 'AUTH_USER_MODEL', 'auth.User'))
+    user = models.OneToOneField(django.conf.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     trust_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days a agent will remain trusted.")
     inactivity_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days allowed between requests before a agent's trust is revoked.")
     serial = models.IntegerField(default=0, help_text="Increment this to revoke all previously trusted agents.")
 
     def __str__(self):
-        if six.PY3:
-            return self.__unicode__()
-        else:
-            return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
-        username = self.user.get_username() if hasattr(self.user, 'get_username') else self.user.username
-
-        return u"AgentSettings: {0}".format(username)
+        return "AgentSettings: {0}".format(self.user.get_username())
 
 
 class Agent(object):

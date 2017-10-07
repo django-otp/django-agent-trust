@@ -1,5 +1,7 @@
 .. vim: ft=rst nospell tw=80
 
+`Package Documentation <http://django-agent-trust-official.readthedocs.io/>`_
+
 This project has tools for managing trusted user agents. For example, you might
 allow the user to indicate whether they are using a public or private computer
 and implement different policies for each. Or you might be using a two-factor

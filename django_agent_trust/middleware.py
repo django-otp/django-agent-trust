@@ -1,4 +1,6 @@
-from base64 import b64encode, b64decode
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+from base64 import b64decode, b64encode
 from datetime import datetime
 from hashlib import md5
 import json
@@ -6,13 +8,14 @@ import logging
 
 from django.core.exceptions import ImproperlyConfigured
 
+from .conf import settings
+from .models import SESSION_TOKEN_KEY, Agent, AgentSettings
+
+
 try:
     from django.utils.deprecation import MiddlewareMixin
 except ImportError:
     MiddlewareMixin = object
-
-from .conf import settings
-from .models import AgentSettings, Agent, SESSION_TOKEN_KEY
 
 
 logger = logging.getLogger(__name__)
