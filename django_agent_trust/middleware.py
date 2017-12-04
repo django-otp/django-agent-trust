@@ -8,6 +8,7 @@ import logging
 
 from django.core.exceptions import ImproperlyConfigured
 
+from .compat import is_authenticated
 from .conf import settings
 from .models import SESSION_TOKEN_KEY, Agent, AgentSettings
 
@@ -33,7 +34,7 @@ class AgentMiddleware(MiddlewareMixin):
 
     """
     def process_request(self, request):
-        if request.user.is_authenticated():
+        if is_authenticated(request.user):
             AgentSettings.objects.get_or_create(user=request.user)
 
             request.agent = self._load_agent(request)
@@ -45,7 +46,7 @@ class AgentMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
         agent = getattr(request, 'agent', None)
 
-        if (agent is not None) and agent.user.is_authenticated():
+        if (agent is not None) and is_authenticated(agent.user):
             self._save_agent(agent, response)
 
         return response
