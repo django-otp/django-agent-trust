@@ -52,7 +52,7 @@ class AgentMiddleware(MiddlewareMixin):
         return response
 
     def _load_agent(self, request):
-        cookie_name = self._cookie_name(self._get_username(request.user))
+        cookie_name = self._cookie_name(request.user.get_username())
         max_age = self._max_cookie_age(request.user.agentsettings)
 
         # 'e30=' is base64 for '{}'
@@ -74,7 +74,7 @@ class AgentMiddleware(MiddlewareMixin):
 
         logger.debug('Decoded agent: {0}'.format(data))
 
-        if data.get('username') == self._get_username(user):
+        if data.get('username') == user.get_username():
             agent = Agent.from_jsonable(data, user)
             if self._should_discard_agent(agent):
                 agent = None
@@ -83,7 +83,7 @@ class AgentMiddleware(MiddlewareMixin):
             agent = Agent.untrusted_agent(user)
 
         logger.debug('Loaded agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
-            self._get_username(user), agent.is_trusted, agent.trusted_at,
+            user.get_username(), agent.is_trusted, agent.trusted_at,
             agent.serial)
         )
 
@@ -101,11 +101,11 @@ class AgentMiddleware(MiddlewareMixin):
 
     def _save_agent(self, agent, response):
         logger.debug('Saving agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
-            self._get_username(agent.user), agent.is_trusted, agent.trusted_at,
+            agent.user.get_username(), agent.is_trusted, agent.trusted_at,
             agent.serial)
         )
 
-        cookie_name = self._cookie_name(self._get_username(agent.user))
+        cookie_name = self._cookie_name(agent.user.get_username())
         encoded = self._encode_cookie(agent, agent.user)
         max_age = self._max_cookie_age(agent.user.agentsettings)
 
@@ -143,9 +143,3 @@ class AgentMiddleware(MiddlewareMixin):
             days = user_days
 
         return days * 86400
-
-    def _get_username(self, user):
-        """
-        Return the username of a user in a model- and version-indepenedent way.
-        """
-        return user.get_username() if hasattr(user, 'get_username') else user.username
