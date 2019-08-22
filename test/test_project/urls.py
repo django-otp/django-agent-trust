@@ -7,8 +7,8 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^login/$', django.contrib.auth.views.login),
-    url(r'^logout/$', django.contrib.auth.views.logout),
+    url(r'^login/$', django.contrib.auth.views.LoginView.as_view()),
+    url(r'^logout/$', django.contrib.auth.views.LogoutView.as_view()),
 
     url(r'^restricted/$', views.RestrictedView.as_view()),
     url(r'^trust/$', views.TrustView.as_view()),

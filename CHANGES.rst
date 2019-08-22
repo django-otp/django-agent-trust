@@ -1,11 +1,14 @@
-.. vim: ft=rst nospell tw=80
+v0.3.2 - (Pending) - Housekeeping
+---------------------------------
+
+Routine updates to version dependencies and test matrix, plus miscellaneous
+cleanup.
+
 
 v0.3.1 - December 4, 2017 - Django 2.0
 --------------------------------------
 
-- Fix `#4`_: Add support for Django 2.0.
-
-.. _#4: https://bitbucket.org/psagers/django-agent-trust/issues/4/useris_authenticated-is-no-longer-a
+- Add support for Django 2.0.
 
 
 v0.3.0 - October 7, 2017 - Forward compatibility

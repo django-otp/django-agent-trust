@@ -1,31 +1,34 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup(
     name='django-agent-trust',
     version='0.3.1',
     description="A framework for managing agent trust, such as public vs. private computers.",
-    long_description=open('README').read(),
-    author='Peter Sagerson',
-    author_email='psagersDjwublJf@ignorare.net',
-    packages=[
-        'django_agent_trust',
-        'django_agent_trust.migrations',
-    ],
-    url='https://bitbucket.org/psagers/django-agent-trust',
+    author="Peter Sagerson",
+    author_email='psagers@ignorare.net',
+    url='https://github.com/django-otp/django-agent-trust',
+    project_urls={
+        "Documentation": 'https://django-agent-trust-official.readthedocs.io/',
+        "Source": 'https://github.com/django-otp/django-agent-trust',
+    },
     license='BSD',
+
+    package_dir={'': 'src'},
+    packages=find_packages(where='src'),
     install_requires=[
-        'django>=1.8',
+        'django>=1.11',
     ],
+
     classifiers=[
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
