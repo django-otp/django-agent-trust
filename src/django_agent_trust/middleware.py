@@ -8,21 +8,14 @@ import logging
 
 from django.core.exceptions import ImproperlyConfigured
 
-from .compat import is_authenticated
 from .conf import settings
 from .models import SESSION_TOKEN_KEY, Agent, AgentSettings
-
-
-try:
-    from django.utils.deprecation import MiddlewareMixin
-except ImportError:
-    MiddlewareMixin = object
 
 
 logger = logging.getLogger(__name__)
 
 
-class AgentMiddleware(MiddlewareMixin):
+class AgentMiddleware(object):
     """
     This must be installed after
     :class:`~django.contrib.auth.middleware.AuthenticationMiddleware` to manage
@@ -33,20 +26,20 @@ class AgentMiddleware(MiddlewareMixin):
     tell you whether the user's agent has been trusted.
 
     """
-    def process_request(self, request):
-        if is_authenticated(request.user):
-            AgentSettings.objects.get_or_create(user=request.user)
+    def __init__(self, get_response=None):
+        self.get_response = get_response
 
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            AgentSettings.objects.get_or_create(user=request.user)
             request.agent = self._load_agent(request)
         else:
             request.agent = Agent.untrusted_agent(request.user)
 
-        return None
+        response = self.get_response(request)
 
-    def process_response(self, request, response):
         agent = getattr(request, 'agent', None)
-
-        if (agent is not None) and is_authenticated(agent.user):
+        if agent and agent.user.is_authenticated:
             self._save_agent(agent, response)
 
         return response

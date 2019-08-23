@@ -7,7 +7,6 @@ import django.conf
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
-from .compat import is_anonymous
 from .conf import settings
 
 
@@ -65,14 +64,14 @@ class Agent(object):
 
     @classmethod
     def trusted_agent(cls, user, trust_days=None):
-        if is_anonymous(user):
+        if user.is_anonymous:
             raise ValueError("Can't create a trusted agent for an anonymous user.")
 
         return cls(user, True, datetime.now(), trust_days, user.agentsettings.serial, None)
 
     @classmethod
     def session_agent(cls, user, token):
-        if is_anonymous(user):
+        if user.is_anonymous:
             raise ValueError("Can't create a trusted agent for an anonymous user.")
 
         return cls(user, True, datetime.now(), None, user.agentsettings.serial, token)

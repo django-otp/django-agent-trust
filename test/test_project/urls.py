@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from django.conf.urls import url
+from django.contrib import admin
 import django.contrib.auth.views
 
 from . import views
@@ -15,4 +16,6 @@ urlpatterns = [
     url(r'^session/$', views.SessionView.as_view()),
     url(r'^revoke/$', views.RevokeView.as_view()),
     url(r'^revoke_others/$', views.RevokeOthersView.as_view()),
+
+    url(r'^admin/', admin.site.urls),
 ]

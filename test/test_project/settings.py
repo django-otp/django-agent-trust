@@ -4,8 +4,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from os.path import abspath, dirname, join
 
-import django
-
 
 def project_path(path):
     return abspath(join(dirname(__file__), path))
@@ -21,6 +19,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -46,7 +45,16 @@ TEMPLATES = [
         'APP_DIRS': True,
         'DIRS': [
             project_path('templates'),
-        ]
+        ],
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django_agent_trust.context_processors.agent',
+            ],
+        },
     },
 ]
 

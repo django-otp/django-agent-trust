@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from random import randrange
 
-from .compat import is_authenticated
-
 
 def trust_agent(request, trust_days=None):
     """
@@ -17,7 +15,7 @@ def trust_agent(request, trust_days=None):
     """
     from .models import Agent
 
-    if is_authenticated(request.user):
+    if request.user.is_authenticated:
         request.agent = Agent.trusted_agent(request.user, trust_days)
 
 
@@ -33,7 +31,7 @@ def trust_session(request):
     """
     from .models import Agent, SESSION_TOKEN_KEY
 
-    if is_authenticated(request.user):
+    if request.user.is_authenticated:
         # We need a token to link this agent to the current session. It's
         # strictly internal, so it doesn't have to be cryptographically sound,
         # just probabalistically unique.
@@ -63,7 +61,7 @@ def revoke_other_agents(request):
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
-    if is_authenticated(request.user):
+    if request.user.is_authenticated:
         request.user.agentsettings.serial += 1
         request.user.agentsettings.save()
 
