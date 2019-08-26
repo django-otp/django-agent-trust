@@ -1,5 +1,5 @@
-v0.3.2 - (Pending) - Housekeeping
----------------------------------
+v0.4.0 - August 26, 2019 - Housekeeping
+---------------------------------------
 
 Routine updates to version dependencies and test matrix, plus miscellaneous
 cleanup.
