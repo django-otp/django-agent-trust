@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from datetime import timedelta
 
+import six
+
 import django
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
@@ -10,7 +12,6 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
-from django.utils import six
 import django.utils.timezone
 
 from django_agent_trust.conf import settings

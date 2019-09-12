@@ -3,9 +3,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from datetime import datetime, timedelta
 from time import mktime
 
+from six import python_2_unicode_compatible
+
 import django.conf
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 from .conf import settings
 
