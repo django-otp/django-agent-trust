@@ -1,4 +1,4 @@
-Unreleased - Drop unsupported Python and Django versions
+v1.0.0 - August 13, 2020 - Drop unsupported Python and Django versions
 ------------------------------------------------------------
 
 - Now supports Python>=3.5 and Django>=2.2.
