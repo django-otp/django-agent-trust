@@ -12,6 +12,7 @@ wheel = "*"
 twine = "*"
 sphinx = "*"
 django-agent-trust = {editable = true,path = "."}
+bumpversion = "*"
 
 [packages]
 
