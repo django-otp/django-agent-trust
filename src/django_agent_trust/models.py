@@ -1,9 +1,5 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from datetime import datetime, timedelta
 from time import mktime
-
-from six import python_2_unicode_compatible
 
 import django.conf
 from django.db import models
@@ -14,7 +10,6 @@ from .conf import settings
 SESSION_TOKEN_KEY = 'django-agent-trust-token'
 
 
-@python_2_unicode_compatible
 class AgentSettings(models.Model):
     """
     Agent trust settings for a single user.

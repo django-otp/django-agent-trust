@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import View

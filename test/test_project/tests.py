@@ -1,8 +1,4 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from datetime import timedelta
-
-import six
 
 import django
 from django.contrib.auth import get_user_model
@@ -57,7 +53,7 @@ class AgentCodingTestCase(AgentTrustTestCase):
         return self.alice.agentsettings
 
     def test_coverage(self):
-        six.u(str(self.agentsettings))
+        str(self.agentsettings)
 
     def test_trust_anonymous(self):
         with self.assertRaises(Exception):

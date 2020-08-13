@@ -1,7 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from six import iteritems
-
 import django.conf
 
 
@@ -29,7 +25,7 @@ class Settings(object):
         Loads our settings from django.conf.settings, applying defaults for any
         that are omitted.
         """
-        for name, default in iteritems(self.defaults):
+        for name, default in self.defaults.items():
             value = getattr(django.conf.settings, name, default)
             setattr(self, name, value)
 
@@ -44,11 +40,11 @@ class Settings(object):
             self.contextual = contextual
 
         def __enter__(self):
-            for k, v in iteritems(self.contextual):
+            for k, v in self.contextual.items():
                 setattr(self.settings, k, v)
 
         def __exit__(self, *args, **kwargs):
-            for k, v in iteritems(self.original):
+            for k, v in self.original.items():
                 setattr(self.settings, k, v)
 
     def __call__(self, **kwargs):

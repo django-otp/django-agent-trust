@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from random import randrange
 
 
@@ -29,7 +27,7 @@ def trust_session(request):
     :param request: The current request.
     :type request: :class:`~django.http.HttpRequest`
     """
-    from .models import Agent, SESSION_TOKEN_KEY
+    from .models import SESSION_TOKEN_KEY, Agent
 
     if request.user.is_authenticated:
         # We need a token to link this agent to the current session. It's
