@@ -4,6 +4,7 @@ from hashlib import md5
 import json
 import logging
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 
 from .conf import settings
@@ -29,7 +30,8 @@ class AgentMiddleware(object):
 
     def __call__(self, request):
         if request.user.is_authenticated:
-            AgentSettings.objects.get_or_create(user=request.user)
+            if not get_user_model().agentsettings.is_cached(request.user):
+                request.user.agentsettings, _ = AgentSettings.objects.get_or_create(user=request.user)
             request.agent = self._load_agent(request)
         else:
             request.agent = Agent.untrusted_agent(request.user)
