@@ -1,5 +1,14 @@
+v1.0.1 - September 21, 2020 - AgentSettings improvement
+-------------------------------------------------------------------------------
+
+- Fix `#2`_: Improved AgentSettings initialization.
+
+
+.. _#2: https://github.com/django-otp/django-agent-trust/issues/2
+
+
 v1.0.0 - August 13, 2020 - Drop unsupported Python and Django versions
-------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 - Now supports Python>=3.5 and Django>=2.2.
 
