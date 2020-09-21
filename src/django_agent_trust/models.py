@@ -10,6 +10,17 @@ from .conf import settings
 SESSION_TOKEN_KEY = 'django-agent-trust-token'
 
 
+class AgentSettingsManager(models.Manager):
+    def ensure_for_user(self, user):
+        """
+        Loads a user's AgentSettings instance, creating a default if necessary.
+        """
+        try:
+            user.agentsettings
+        except self.model.DoesNotExist:
+            user.agentsettings = self.create(user=user)
+
+
 class AgentSettings(models.Model):
     """
     Agent trust settings for a single user.
@@ -34,6 +45,8 @@ class AgentSettings(models.Model):
     trust_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days a agent will remain trusted.")
     inactivity_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days allowed between requests before a agent's trust is revoked.")
     serial = models.IntegerField(default=0, help_text="Increment this to revoke all previously trusted agents.")
+
+    objects = AgentSettingsManager()
 
     def __str__(self):
         return "AgentSettings: {0}".format(self.user.get_username())

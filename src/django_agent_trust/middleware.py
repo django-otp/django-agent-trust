@@ -29,7 +29,7 @@ class AgentMiddleware(object):
 
     def __call__(self, request):
         if request.user.is_authenticated:
-            AgentSettings.objects.get_or_create(user=request.user)
+            AgentSettings.objects.ensure_for_user(request.user)
             request.agent = self._load_agent(request)
         else:
             request.agent = Agent.untrusted_agent(request.user)
