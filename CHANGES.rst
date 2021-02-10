@@ -1,3 +1,15 @@
+Unreleased - AgentSettings improvement
+-------------------------------------------------------------------------------
+
+- Fix `#6`_: Trap and ignore the inevitable get_or_create race condition on
+  AgentSettings. This also adds a signal handler to automatically initialize
+  AgentSettings for new users, which should avoid this race condition in the
+  first place.
+
+
+.. _#6: https://github.com/django-otp/django-agent-trust/issues/6
+
+
 v1.0.1 - September 21, 2020 - AgentSettings improvement
 -------------------------------------------------------------------------------
 

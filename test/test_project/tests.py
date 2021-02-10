@@ -42,8 +42,6 @@ class AgentCodingTestCase(AgentTrustTestCase):
     """
     def setUp(self):
         self.alice = self.create_user('alice', 'alice')
-        AgentSettings.objects.create(user=self.alice)
-
         self.bob = self.create_user('bob', 'bob')
 
         self.middleware = AgentMiddleware()
@@ -194,7 +192,6 @@ class DecoratorTest(AgentTrustTestCase):
     def setUp(self):
         try:
             self.alice = self.create_user('alice', 'alice')
-            AgentSettings.objects.create(user=self.alice)
         except IntegrityError:
             self.skipTest("Unable to create a test user.")
 
@@ -254,8 +251,7 @@ class HttpTestCase(AgentTrustTestCase):
     """
     def setUp(self):
         try:
-            user = self.create_user('alice', 'alice')
-            AgentSettings.objects.create(user=user)
+            self.create_user('alice', 'alice')
             self.create_user('bob', 'bob')
         except IntegrityError:
             self.skipTest("Unable to create a test user.")
@@ -302,8 +298,7 @@ class HttpTestCase(AgentTrustTestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_exotic_username(self):
-        user = self.create_user('charlie@example.com', 'charlie')
-        AgentSettings.objects.create(user=user)
+        self.create_user('charlie@example.com', 'charlie')
         charlie = AgentClient('charlie@example.com', 'charlie')
 
         charlie.login()

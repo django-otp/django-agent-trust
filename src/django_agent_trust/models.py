@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from time import mktime
 
 import django.conf
-from django.db import models
+from django.db import IntegrityError, models
 
 from .conf import settings
 
@@ -18,7 +18,11 @@ class AgentSettingsManager(models.Manager):
         try:
             user.agentsettings
         except self.model.DoesNotExist:
-            user.agentsettings = self.create(user=user)
+            user.agentsettings = self.model(user=user)
+            try:
+                user.agentsettings.save()
+            except IntegrityError:  # Trap and ignore the race condition.
+                pass
 
 
 class AgentSettings(models.Model):

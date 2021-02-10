@@ -1,6 +1,9 @@
 from random import randrange
 
 
+default_app_config = 'django_agent_trust.apps.DefaultConfig'
+
+
 def trust_agent(request, trust_days=None):
     """
     Mark the requesting agent as trusted for the currently logged-in user. This
