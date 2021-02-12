@@ -1,4 +1,4 @@
-Unreleased - AgentSettings improvement
+v1.0.2 - February 12, 2021 - AgentSettings improvement
 -------------------------------------------------------------------------------
 
 - Fix `#6`_: Trap and ignore the inevitable get_or_create race condition on
