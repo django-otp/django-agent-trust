@@ -46,6 +46,7 @@ django.conf.settings.configure(
     INSTALLED_APPS=[
         'django_agent_trust',
     ],
+    SECRET_KEY='properly-configured',
 )
 django.setup()
 
