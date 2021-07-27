@@ -5,6 +5,7 @@ import json
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
+from django_otp import user_has_device
 
 from .conf import settings
 from .models import SESSION_TOKEN_KEY, Agent, AgentSettings
@@ -37,7 +38,7 @@ class AgentMiddleware(object):
         response = self.get_response(request)
 
         agent = getattr(request, 'agent', None)
-        if agent and agent.user.is_authenticated:
+        if agent is not None and request.user.is_authenticated and user_has_device(agent.user):
             self._save_agent(agent, response)
 
         return response
