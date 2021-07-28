@@ -1,3 +1,14 @@
+Unreleased - Cookie management
+-------------------------------------------------------------------------------
+
+- Fix `#9`_: We now delete cookies for untrusted agents rather than saving
+  them. :class:`~django_agent_trust.middleware.AgentMiddleware` also now
+  includes a subclass hook for implementing more complex cookie policies.
+
+
+.. _#9: https://github.com/django-otp/django-agent-trust/issues/9
+
+
 v1.0.2 - February 12, 2021 - AgentSettings improvement
 -------------------------------------------------------------------------------
 

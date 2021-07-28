@@ -1,16 +1,30 @@
 from base64 import b64decode, b64encode
 from datetime import datetime
+import enum
 from hashlib import md5
 import json
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpRequest, HttpResponse
 
 from .conf import settings
 from .models import SESSION_TOKEN_KEY, Agent, AgentSettings
 
 
 logger = logging.getLogger(__name__)
+
+
+class CookieAction(enum.Enum):
+    """
+    What to do with the trust cookie after processing the request.
+    """
+    #: Don't do anything with the cookie.
+    NONE = enum.auto()
+    #: Save the cookie with the latest Agent (this is the most common action).
+    SAVE = enum.auto()
+    #: Delete the cookie.
+    CLEAR = enum.auto()
 
 
 class AgentMiddleware(object):
@@ -22,6 +36,8 @@ class AgentMiddleware(object):
     This middleware will set ``request.agent`` to an instance of
     :class:`django_agent_trust.models.Agent`. ``request.agent.is_trusted`` will
     tell you whether the user's agent has been trusted.
+
+    This can be subclassed to override documented methods.
 
     """
     def __init__(self, get_response=None):
@@ -37,10 +53,30 @@ class AgentMiddleware(object):
         response = self.get_response(request)
 
         agent = getattr(request, 'agent', None)
-        if agent and agent.user.is_authenticated:
-            self._save_agent(agent, response)
+        if agent:
+            action = self.cookie_action(request, response, agent)
+            if action is CookieAction.SAVE:
+                self._save_agent(agent, response)
+            elif action is CookieAction.CLEAR:
+                self._clear_agent(agent, response)
 
         return response
+
+    def cookie_action(self, request: HttpRequest, response: HttpResponse, agent: Agent) -> CookieAction:
+        """
+        Decides how to handle the cookie in the response.
+
+        This can be overridden to implement custom policies.
+
+        """
+        if agent.user.is_anonymous:
+            action = CookieAction.NONE
+        elif agent.is_trusted:
+            action = CookieAction.SAVE
+        else:
+            action = CookieAction.CLEAR
+
+        return action
 
     def _load_agent(self, request):
         cookie_name = self._cookie_name(request.user.get_username())
@@ -106,6 +142,17 @@ class AgentMiddleware(object):
                                    secure=settings.AGENT_COOKIE_SECURE,
                                    httponly=settings.AGENT_COOKIE_HTTPONLY)
 
+    def _clear_agent(self, agent, response):
+        logger.debug('Clearing agent: username={0}, serial={1}'.format(
+            agent.user.get_username(), agent.serial)
+        )
+
+        cookie_name = self._cookie_name(agent.user.get_username())
+
+        response.delete_cookie(cookie_name,
+                               path=settings.AGENT_COOKIE_PATH,
+                               domain=settings.AGENT_COOKIE_DOMAIN)
+
     def _encode_cookie(self, agent, user):
         data = agent.to_jsonable()
         content = json.dumps(data)
@@ -113,7 +160,8 @@ class AgentMiddleware(object):
 
         return encoded
 
-    def _cookie_name(self, username):
+    @classmethod
+    def _cookie_name(cls, username):
         suffix = md5(username.encode('utf-8')).hexdigest()[16:]
 
         return '{0}-{1}'.format(settings.AGENT_COOKIE_NAME, suffix)

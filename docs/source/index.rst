@@ -93,6 +93,19 @@ model object:
 A custom duration can be set on an individual agent at the time that it is
 trusted by :func:`~django_agent_trust.trust_agent`.
 
+
+Customization
+-------------
+
+.. autoclass:: django_agent_trust.middleware.AgentMiddleware
+   :members:
+
+.. autoclass:: django_agent_trust.middleware.CookieAction
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+
 Settings
 --------
 
@@ -146,7 +159,7 @@ Whether to use a secure cookie for the agent cookies. If this is set to
 that the cookie is only sent under an HTTPS connection.
 
 
-.. setting:: AGENT_LOGIN_URL 
+.. setting:: AGENT_LOGIN_URL
 
 **AGENT_LOGIN_URL**
 
@@ -156,7 +169,7 @@ The URL where requests are redirected for login when using the
 :func:`~django_agent_trust.decorators.trusted_agent_required` decorator.
 
 
-.. setting:: AGENT_TRUST_DAYS 
+.. setting:: AGENT_TRUST_DAYS
 
 **AGENT_TRUST_DAYS**
 
@@ -166,9 +179,9 @@ The number of days an agent will remain trusted. This can be ``None`` to impose
 no limit.
 
 
-.. setting:: AGENT_INACTIVITY_DAYS 
+.. setting:: AGENT_INACTIVITY_DAYS
 
-**AGENT_INACTIVITY_DAYS** 
+**AGENT_INACTIVITY_DAYS**
 
 Default: ``365``
 

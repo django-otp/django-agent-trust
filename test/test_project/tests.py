@@ -173,6 +173,10 @@ class AgentCodingTestCase(AgentTrustTestCase):
 
         self.assertEqual(self.middleware._max_cookie_age(self.agentsettings), 30 * 86400)
 
+    #
+    # Utils
+    #
+
     def _roundtrip(self, *args, **kwargs):
         agent = Agent(self.alice, *args, **kwargs)
 
@@ -290,9 +294,14 @@ class HttpTestCase(AgentTrustTestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_revoked(self):
+        cookie_name = AgentMiddleware._cookie_name(self.alice.username)
+
         self.alice.login()
         self.alice.trust()
-        self.alice.revoke()
+        response = self.alice.revoke()
+
+        self.assertEqual(response.cookies[cookie_name]['max-age'], 0)
+
         response = self.alice.get_restricted()
 
         self.assertEqual(response.status_code, 302)
@@ -308,8 +317,13 @@ class HttpTestCase(AgentTrustTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_persist(self):
+        cookie_name = AgentMiddleware._cookie_name(self.alice.username)
+
         self.alice.login()
-        self.alice.trust()
+        response = self.alice.trust()
+
+        self.assertGreater(response.cookies[cookie_name]['max-age'], 0)
+
         self.alice.logout()
         self.alice.login()
         response = self.alice.get_restricted()
