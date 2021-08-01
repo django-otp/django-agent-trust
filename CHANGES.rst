@@ -1,4 +1,4 @@
-Unreleased - Cookie management
+v1.0.3 - August 01, 2021 - Cookie management
 -------------------------------------------------------------------------------
 
 - Fix `#9`_: We now delete cookies for untrusted agents rather than saving
