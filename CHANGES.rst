@@ -1,3 +1,10 @@
+v1.0.4 - November 29, 2021 - Forward compatibility
+--------------------------------------------------------------------------------
+
+Default to AutoField to avoid spurious migrations.
+
+
+
 v1.0.3 - August 01, 2021 - Cookie management
 -------------------------------------------------------------------------------
 
