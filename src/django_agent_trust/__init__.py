@@ -1,7 +1,10 @@
 from random import randrange
 
+import django
 
-default_app_config = 'django_agent_trust.apps.DefaultConfig'
+
+if django.VERSION < (3, 2):
+    default_app_config = 'django_agent_trust.apps.DefaultConfig'
 
 
 def trust_agent(request, trust_days=None):
