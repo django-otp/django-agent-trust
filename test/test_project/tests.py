@@ -1,6 +1,5 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
-import django
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
@@ -8,7 +7,6 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
-import django.utils.timezone
 
 from django_agent_trust.conf import settings
 from django_agent_trust.decorators import trusted_agent_required
@@ -17,7 +15,7 @@ from django_agent_trust.models import Agent, AgentSettings
 
 
 def now():
-    return django.utils.timezone.now().replace(microsecond=0)
+    return datetime.now().replace(microsecond=0)
 
 
 class AgentTrustTestCase(TestCase):
