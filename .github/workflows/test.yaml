@@ -22,3 +22,6 @@ jobs:
 
     - name: Run Tests
       run: hatch run test:run
+
+    - name: Build docs
+      run: hatch run docs:make
