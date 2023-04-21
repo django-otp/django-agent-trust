@@ -1,3 +1,15 @@
+Unreleased - Tools and packaging
+--------------------------------------------------------------------------------
+
+This project is now managed with `hatch`_, which replaces setuptools, pipenv,
+and tox. Users of the package should not be impacted. Developers can refer to
+the readme for details. If you're packaging this project from source, I suggest
+relying on pip's isolated builds rather than using hatch directly.
+
+
+.. _hatch: https://hatch.pypa.io/
+
+
 v1.0.4 - November 29, 2021 - Forward compatibility
 --------------------------------------------------------------------------------
 

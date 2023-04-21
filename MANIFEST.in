@@ -1,5 +1,0 @@
-include CHANGES LICENSE README.rst tox.ini
-
-recursive-include test_project *.py *.html
-recursive-include docs Makefile *.rst *.py
-prune docs/build
