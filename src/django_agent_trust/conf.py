@@ -7,15 +7,14 @@ class Settings(object):
     instance will contain all of our settings as attributes, with default values
     if they are not specified by the configuration.
     """
+
     defaults = {
         'AGENT_COOKIE_DOMAIN': None,
         'AGENT_COOKIE_HTTPONLY': True,
         'AGENT_COOKIE_NAME': 'agent-trust',
         'AGENT_COOKIE_PATH': '/',
         'AGENT_COOKIE_SECURE': False,
-
         'AGENT_LOGIN_URL': django.conf.settings.LOGIN_URL,
-
         'AGENT_TRUST_DAYS': None,
         'AGENT_INACTIVITY_DAYS': 365,
     }

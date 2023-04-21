@@ -19,6 +19,7 @@ class CookieAction(enum.Enum):
     """
     What to do with the trust cookie after processing the request.
     """
+
     #: Don't do anything with the cookie.
     NONE = enum.auto()
     #: Save the cookie with the latest Agent (this is the most common action).
@@ -40,6 +41,7 @@ class AgentMiddleware(object):
     This can be subclassed to override documented methods.
 
     """
+
     def __init__(self, get_response=None):
         self.get_response = get_response
 
@@ -62,7 +64,9 @@ class AgentMiddleware(object):
 
         return response
 
-    def cookie_action(self, request: HttpRequest, response: HttpResponse, agent: Agent) -> CookieAction:
+    def cookie_action(
+        self, request: HttpRequest, response: HttpResponse, agent: Agent
+    ) -> CookieAction:
         """
         Decides how to handle the cookie in the response.
 
@@ -83,12 +87,15 @@ class AgentMiddleware(object):
         max_age = self._max_cookie_age(request.user.agentsettings)
 
         # 'e30=' is base64 for '{}'
-        encoded = request.get_signed_cookie(cookie_name, default='e30=',
-                                            max_age=max_age)
+        encoded = request.get_signed_cookie(
+            cookie_name, default='e30=', max_age=max_age
+        )
 
         agent = self._decode_cookie(encoded, request.user)
 
-        if (agent.session is not None) and (agent.session != request.session.get(SESSION_TOKEN_KEY)):
+        if (agent.session is not None) and (
+            agent.session != request.session.get(SESSION_TOKEN_KEY)
+        ):
             agent = Agent.untrusted_agent(request.user)
 
         return agent
@@ -109,9 +116,10 @@ class AgentMiddleware(object):
         if agent is None:
             agent = Agent.untrusted_agent(user)
 
-        logger.debug('Loaded agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
-            user.get_username(), agent.is_trusted, agent.trusted_at,
-            agent.serial)
+        logger.debug(
+            'Loaded agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
+                user.get_username(), agent.is_trusted, agent.trusted_at, agent.serial
+            )
         )
 
         return agent
@@ -127,31 +135,43 @@ class AgentMiddleware(object):
         return False
 
     def _save_agent(self, agent, response):
-        logger.debug('Saving agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
-            agent.user.get_username(), agent.is_trusted, agent.trusted_at,
-            agent.serial)
+        logger.debug(
+            'Saving agent: username={0}, is_trusted={1}, trusted_at={2}, serial={3}'.format(
+                agent.user.get_username(),
+                agent.is_trusted,
+                agent.trusted_at,
+                agent.serial,
+            )
         )
 
         cookie_name = self._cookie_name(agent.user.get_username())
         encoded = self._encode_cookie(agent, agent.user)
         max_age = self._max_cookie_age(agent.user.agentsettings)
 
-        response.set_signed_cookie(cookie_name, encoded, max_age=max_age,
-                                   path=settings.AGENT_COOKIE_PATH,
-                                   domain=settings.AGENT_COOKIE_DOMAIN,
-                                   secure=settings.AGENT_COOKIE_SECURE,
-                                   httponly=settings.AGENT_COOKIE_HTTPONLY)
+        response.set_signed_cookie(
+            cookie_name,
+            encoded,
+            max_age=max_age,
+            path=settings.AGENT_COOKIE_PATH,
+            domain=settings.AGENT_COOKIE_DOMAIN,
+            secure=settings.AGENT_COOKIE_SECURE,
+            httponly=settings.AGENT_COOKIE_HTTPONLY,
+        )
 
     def _clear_agent(self, agent, response):
-        logger.debug('Clearing agent: username={0}, serial={1}'.format(
-            agent.user.get_username(), agent.serial)
+        logger.debug(
+            'Clearing agent: username={0}, serial={1}'.format(
+                agent.user.get_username(), agent.serial
+            )
         )
 
         cookie_name = self._cookie_name(agent.user.get_username())
 
-        response.delete_cookie(cookie_name,
-                               path=settings.AGENT_COOKIE_PATH,
-                               domain=settings.AGENT_COOKIE_DOMAIN)
+        response.delete_cookie(
+            cookie_name,
+            path=settings.AGENT_COOKIE_PATH,
+            domain=settings.AGENT_COOKIE_DOMAIN,
+        )
 
     def _encode_cookie(self, agent, user):
         data = agent.to_jsonable()

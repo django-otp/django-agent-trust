@@ -45,10 +45,30 @@ class AgentSettings(models.Model):
         one of this user's agents before trust is revoked. ``None`` for no
         limit. Default is ``None``.
     """
-    user = models.OneToOneField(django.conf.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    trust_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days a agent will remain trusted.")
-    inactivity_days = models.FloatField(blank=True, null=True, default=None, help_text="The number of days allowed between requests before a agent's trust is revoked.")
-    serial = models.IntegerField(default=0, help_text="Increment this to revoke all previously trusted agents.")
+
+    user = models.OneToOneField(
+        django.conf.settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    trust_days = models.FloatField(
+        blank=True,
+        null=True,
+        default=None,
+        help_text="The number of days a agent will remain trusted.",
+    )
+
+    inactivity_days = models.FloatField(
+        blank=True,
+        null=True,
+        default=None,
+        help_text="The number of days allowed between requests before a agent's trust is revoked.",
+    )
+
+    serial = models.IntegerField(
+        default=0,
+        help_text="Increment this to revoke all previously trusted agents.",
+    )
 
     objects = AgentSettingsManager()
 
@@ -63,10 +83,13 @@ class Agent(object):
     These objects are immutable and should never be instantiated directly. Use
     the APIs below to manipulate trust.
     """
+
     def __init__(self, user, is_trusted, trusted_at, trust_days, serial, session):
         self._user = user
         self._is_trusted = is_trusted
-        self._trusted_at = trusted_at.replace(microsecond=0) if (trusted_at is not None) else None
+        self._trusted_at = (
+            trusted_at.replace(microsecond=0) if (trusted_at is not None) else None
+        )
         self._trust_days = trust_days
         self._serial = serial
         self._session = session
@@ -80,7 +103,9 @@ class Agent(object):
         if user.is_anonymous:
             raise ValueError("Can't create a trusted agent for an anonymous user.")
 
-        return cls(user, True, datetime.now(), trust_days, user.agentsettings.serial, None)
+        return cls(
+            user, True, datetime.now(), trust_days, user.agentsettings.serial, None
+        )
 
     @classmethod
     def session_agent(cls, user, token):
@@ -105,7 +130,7 @@ class Agent(object):
         """
         ``True`` if this agent is only trusted for the current session.
         """
-        return (self._session is not None)
+        return self._session is not None
 
     @property
     def trusted_at(self):
@@ -141,10 +166,15 @@ class Agent(object):
         if (not self.is_trusted) or (self.trusted_at is None):
             return None
 
-        prefs = [d for d in [settings.AGENT_TRUST_DAYS,
-                             self.user.agentsettings.trust_days,
-                             self.trust_days]
-                 if d is not None]
+        prefs = [
+            d
+            for d in [
+                settings.AGENT_TRUST_DAYS,
+                self.user.agentsettings.trust_days,
+                self.trust_days,
+            ]
+            if d is not None
+        ]
 
         if len(prefs) > 0:
             expiration = self.trusted_at + timedelta(days=min(prefs))
@@ -155,7 +185,11 @@ class Agent(object):
 
     def to_jsonable(self):
         return {
-            'username': self.user.get_username() if hasattr(self.user, 'get_username') else self.user.username,
+            'username': (
+                self.user.get_username()
+                if hasattr(self.user, 'get_username')
+                else self.user.username
+            ),
             'is_trusted': self.is_trusted,
             'trusted_at': self._trusted_at_timestamp(),
             'trust_days': self.trust_days,

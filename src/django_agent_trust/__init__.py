@@ -39,7 +39,7 @@ def trust_session(request):
         # We need a token to link this agent to the current session. It's
         # strictly internal, so it doesn't have to be cryptographically sound,
         # just probabalistically unique.
-        token = randrange(2 ** 32)
+        token = randrange(2**32)
 
         request.session[SESSION_TOKEN_KEY] = token
         request.agent = Agent.session_agent(request.user, token)

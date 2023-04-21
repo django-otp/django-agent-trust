@@ -20,9 +20,11 @@ def trusted_agent_required(view=None, redirect_field_name='next', login_url=None
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            enforcer = user_passes_test(lambda u: request.agent.is_trusted,
-                                        redirect_field_name=redirect_field_name,
-                                        login_url=login_url)
+            enforcer = user_passes_test(
+                lambda u: request.agent.is_trusted,
+                redirect_field_name=redirect_field_name,
+                login_url=login_url,
+            )
 
             return enforcer(view_func)(request, *args, **kwargs)
 

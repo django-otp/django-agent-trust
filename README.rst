@@ -7,6 +7,9 @@
 .. image:: https://img.shields.io/badge/github-django--agent--trust-green
    :target: https://github.com/django-otp/django-agent-trust
    :alt: Source
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+
 
 This project has tools for managing trusted user agents. For example, you might
 allow the user to indicate whether they are using a public or private computer
@@ -55,6 +58,7 @@ the latest Django. Other scripts include:
 * **manage**: Run a management command via the test project. This can be used to
   generate migrations.
 * **lint**: Run all linters.
+* **fix**: Run tools that can automatically fix many linting errors.
 * **test**: Run all tests.
 * **check**: Run linters and tests.
 * **warn**: Run tests with all warnings enabled. This is especially useful for
