@@ -6,8 +6,12 @@ and tox. Users of the package should not be impacted. Developers can refer to
 the readme for details. If you're packaging this project from source, I suggest
 relying on pip's isolated builds rather than using hatch directly.
 
+- Fix `#12_`: We no longer create `AgentSettings` objects when loading
+  fixtures.
+
 
 .. _hatch: https://hatch.pypa.io/
+.. _#12: https://github.com/django-otp/django-agent-trust/issues/12
 
 
 v1.0.4 - November 29, 2021 - Forward compatibility
