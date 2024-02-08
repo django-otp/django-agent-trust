@@ -7,5 +7,8 @@ from .models import AgentSettings
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def init_agent_settings(sender, instance, created=False, **kwargs):
+    if kwargs.get("raw"):
+        return 
+
     if instance and created:
         AgentSettings.objects.ensure_for_user(instance)
