@@ -1,4 +1,4 @@
-Unreleased - Tools and packaging
+v1.1.0 - February 08, 2024 - Tools and packaging
 --------------------------------------------------------------------------------
 
 This project is now managed with `hatch`_, which replaces setuptools, pipenv,
