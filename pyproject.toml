@@ -33,10 +33,11 @@ Homepage = "https://github.com/django-otp/django-agent-trust"
 
 [tool.hatch.envs.default]
 dependencies = [
+    "black ~= 24.8.0",
     "bumpversion ~= 0.6.0",
-    "coverage ~= 6.3",
-    "flake8 ~= 4.0",
-    "isort ~= 5.10",
+    "coverage ~= 7.6.1",
+    "flake8 ~= 7.1.1",
+    "isort ~= 5.13.1",
 ]
 
 [tool.hatch.envs.default.env-vars]
@@ -72,16 +73,13 @@ run = "test"
 
 [tool.hatch.envs.test.overrides]
 matrix.django.dependencies = [
-    { value = "django ~= 3.2.0", if = ["3.2"] },
-    { value = "django ~= 4.1.0", if = ["4.1"] },
     { value = "django ~= 4.2.0", if = ["4.2"] },
+    { value = "django ~= 5.0.0", if = ["5.0"] },
+    { value = "django ~= 5.1.0", if = ["5.1"] },
 ]
 matrix.mode.scripts = [
     { key = "run", value = "lint", if = ["lint"] },
     { key = "run", value = "cov", if = ["coverage"] },
-]
-matrix.mode.skip-install = [
-    { value = true, if = ["lint"] }
 ]
 
 [[tool.hatch.envs.test.matrix]]
@@ -90,12 +88,16 @@ mode = ["lint"]
 # WARNING: When you update the Python versions, make sure to update
 # .github/workflows/* as well.
 [[tool.hatch.envs.test.matrix]]
-python = ["3.7"]
-django = ["3.2"]
+python = ["3.8"]
+django = ["4.2"]
 
 [[tool.hatch.envs.test.matrix]]
-python = ["3.11"]
-django = ["4.1", "4.2"]
+python = ["3.10"]
+django = ["5.0"]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.12"]
+django = ["5.1"]
 
 [[tool.hatch.envs.test.matrix]]
 mode = ["coverage"]
